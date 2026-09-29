@@ -15,3 +15,5 @@ data/processed/*
 !data/raw/*.md
 frontend/dist/
 frontend/.env.local
+.DS_Store
+*/.DS_Store
