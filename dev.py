@@ -101,11 +101,13 @@ frontend_proc = subprocess.Popen(
 )
 processes.append(frontend_proc)
 
-print("\n\033[1;32m✓ Both services are running!\033[0m")
-print("  ➜ Frontend: \033[1mhttp://localhost:5173\033[0m")
-print("  ➜ Backend:  \033[1mhttp://localhost:8000\033[0m")
-print("  ➜ API Docs: \033[1mhttp://localhost:8000/docs\033[0m")
-print("\033[33mPress [Ctrl+C] at any time to stop both servers.\033[0m\n")
+print("\n\033[1;32m====================================================\033[0m")
+print("\033[1;32m✓ Everything is running together on ONE single link!\033[0m")
+print("\033[1;32m====================================================\033[0m")
+print("  👉 🌐 \033[1;36mhttp://localhost:8000\033[0m (Frontend + Backend APIs combined)")
+print("  ➜ 📚 API Docs:  \033[1mhttp://localhost:8000/docs\033[0m")
+print("  ➜ ⚡ Vite Dev:  \033[1mhttp://localhost:5173\033[0m (HMR hot-reload)")
+print("\033[33mPress [Ctrl+C] at any time to stop servers.\033[0m\n")
 
 try:
     while True:

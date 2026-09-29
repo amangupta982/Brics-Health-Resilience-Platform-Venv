@@ -67,7 +67,13 @@ if command -v psql &>/dev/null; then
     fi
 fi
 
-# 4. Start FastAPI Backend (Port 8000)
+# 4. Ensure Frontend bundle is built for Single-URL serving
+if [ ! -d "$ROOT_DIR/frontend/dist" ]; then
+    echo -e "${CYAN}● Building frontend for single-URL serving...${NC}"
+    (cd "$ROOT_DIR/frontend" && npm run build &>/dev/null)
+fi
+
+# 5. Start FastAPI Backend (Port 8000 - serves both Frontend UI & Backend APIs)
 echo -e "${CYAN}● Starting FastAPI Backend (http://localhost:8000)...${NC}"
 (
     export PYTHONPATH="$ROOT_DIR/backend"
@@ -79,7 +85,7 @@ BACKEND_PID=$!
 # Wait briefly for backend to initialize
 sleep 1.5
 
-# 4. Start Vite React Frontend (Port 5173)
+# 6. Start Vite React Frontend (Port 5173 - dev hot-reload)
 echo -e "${GREEN}● Starting Vite React Frontend (http://localhost:5173)...${NC}"
 (
     cd "$ROOT_DIR/frontend"
@@ -87,11 +93,13 @@ echo -e "${GREEN}● Starting Vite React Frontend (http://localhost:5173)...${NC
 ) &
 FRONTEND_PID=$!
 
-echo -e "\n${BOLD}${GREEN}✓ Both services are running!${NC}"
-echo -e "  ➜ Frontend: ${BOLD}http://localhost:5173${NC}"
-echo -e "  ➜ Backend:  ${BOLD}http://localhost:8000${NC}"
-echo -e "  ➜ API Docs: ${BOLD}http://localhost:8000/docs${NC}"
-echo -e "${YELLOW}Press [Ctrl+C] at any time to stop both servers.${NC}\n"
+echo -e "\n${BOLD}${GREEN}====================================================${NC}"
+echo -e "${BOLD}${GREEN}✓ Everything is running together on ONE single link!${NC}"
+echo -e "${BOLD}${GREEN}====================================================${NC}"
+echo -e "  👉 🌐 ${BOLD}${CYAN}http://localhost:8000${NC} (Frontend + Backend APIs combined)"
+echo -e "  ➜ 📚 API Docs:  ${BOLD}http://localhost:8000/docs${NC}"
+echo -e "  ➜ ⚡ Vite Dev:  ${BOLD}http://localhost:5173${NC} (HMR hot-reload)"
+echo -e "${YELLOW}Press [Ctrl+C] at any time to stop servers.${NC}\n"
 
 # Wait for background processes
 wait "$BACKEND_PID" "$FRONTEND_PID"
