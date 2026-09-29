@@ -54,7 +54,20 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM EXIT
 
-# 3. Start FastAPI Backend (Port 8000)
+# 3. Check / Ensure PostgreSQL 'brics_health' Database exists
+if command -v psql &>/dev/null; then
+    if ! psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw brics_health; then
+        echo -e "${YELLOW}● Database 'brics_health' not found. Creating and populating...${NC}"
+        createdb -U postgres brics_health 2>/dev/null || createdb brics_health 2>/dev/null || true
+        if [ -f "$ROOT_DIR/backend/app/database/brics_health_dump.sql" ]; then
+            echo -e "${CYAN}● Restoring database schema and data from brics_health_dump.sql...${NC}"
+            psql -U postgres -d brics_health -f "$ROOT_DIR/backend/app/database/brics_health_dump.sql" &>/dev/null || true
+        fi
+        echo -e "${GREEN}✓ Database 'brics_health' ready.${NC}"
+    fi
+fi
+
+# 4. Start FastAPI Backend (Port 8000)
 echo -e "${CYAN}● Starting FastAPI Backend (http://localhost:8000)...${NC}"
 (
     export PYTHONPATH="$ROOT_DIR/backend"

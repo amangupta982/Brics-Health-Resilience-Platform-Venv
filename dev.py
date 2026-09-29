@@ -51,7 +51,27 @@ def cleanup(*args):
 signal.signal(signal.SIGINT, cleanup)
 signal.signal(signal.SIGTERM, cleanup)
 
-# 2. Start FastAPI Backend (Port 8000)
+# 2. Check / Ensure PostgreSQL 'brics_health' Database exists
+try:
+    check_db = subprocess.run(
+        ["psql", "-U", "postgres", "-lqt"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        timeout=3
+    )
+    if check_db.returncode == 0 and "brics_health" not in check_db.stdout:
+        print("\033[33m● Database 'brics_health' not found. Creating and populating...\033[0m")
+        subprocess.run(["createdb", "-U", "postgres", "brics_health"], capture_output=True)
+        dump_path = os.path.join(ROOT_DIR, "backend", "app", "database", "brics_health_dump.sql")
+        if os.path.exists(dump_path):
+            print("\033[36m● Restoring database schema and data from brics_health_dump.sql...\033[0m")
+            subprocess.run(["psql", "-U", "postgres", "-d", "brics_health", "-f", dump_path], capture_output=True)
+        print("\033[32m✓ Database 'brics_health' ready.\033[0m")
+except Exception:
+    pass
+
+# 3. Start FastAPI Backend (Port 8000)
 print("\033[36m● Starting FastAPI Backend (http://localhost:8000)...\033[0m")
 backend_env = os.environ.copy()
 backend_env["PYTHONPATH"] = os.path.join(ROOT_DIR, "backend")
