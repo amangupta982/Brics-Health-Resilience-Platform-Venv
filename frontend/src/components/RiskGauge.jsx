@@ -1,41 +1,37 @@
 import { useTheme } from './ThemeContext.jsx'
 import { motion } from 'framer-motion'
+import { ShieldCheck, AlertTriangle, AlertCircle, AlertOctagon } from 'lucide-react'
 
 const RISK_ZONES = [
-  { label: 'LOW', color: '#22c55e', from: 0,    to: 0.3  },
-  { label: 'MED', color: '#eab308', from: 0.3,  to: 0.6  },
-  { label: 'HIGH',color: '#f97316', from: 0.6,  to: 0.85 },
-  { label: 'CRIT',color: '#ef4444', from: 0.85, to: 1.0  },
+  { label: 'OPTIMAL', color: '#10b981', from: 0,    to: 0.30, sub: 'Normal Supply' },
+  { label: 'WATCH',   color: '#eab308', from: 0.30, to: 0.60, sub: 'Moderate Risk' },
+  { label: 'ELEVATED',color: '#f97316', from: 0.60, to: 0.85, sub: 'High Probability' },
+  { label: 'CRITICAL',color: '#f43f5e', from: 0.85, to: 1.00, sub: 'Imminent Stockout' },
 ]
 
-function getRiskColor(prob) {
-  if (prob >= 0.85) return '#ef4444'
-  if (prob >= 0.6)  return '#f97316'
-  if (prob >= 0.3)  return '#eab308'
-  return '#22c55e'
+function getRiskMeta(prob) {
+  if (prob >= 0.85) return { label: 'CRITICAL RISK', color: '#f43f5e', bg: 'bg-rose-500/10 text-rose-400 border-rose-500/20', icon: AlertOctagon }
+  if (prob >= 0.60) return { label: 'HIGH RISK', color: '#f97316', bg: 'bg-orange-500/10 text-orange-400 border-orange-500/20', icon: AlertTriangle }
+  if (prob >= 0.30) return { label: 'MODERATE RISK', color: '#eab308', bg: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: AlertCircle }
+  return { label: 'STABLE / LOW RISK', color: '#10b981', bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: ShieldCheck }
 }
 
-function getRiskLabel(prob) {
-  if (prob >= 0.85) return 'CRITICAL'
-  if (prob >= 0.6)  return 'HIGH'
-  if (prob >= 0.3)  return 'MEDIUM'
-  return 'LOW'
-}
-
-export default function RiskGauge({ probability = 0, size = 200 }) {
+export default function RiskGauge({ probability = 0, size = 220 }) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
+  const safeProb = Math.max(0, Math.min(1, probability || 0))
   const cx = size / 2
   const cy = size * 0.62
   const r  = size * 0.38
-  const strokeW = size * 0.075
+  const strokeW = size * 0.065
 
-  // Arc helpers (180° arc from left to right)
+  // Polar to XY coordinate conversion
   const polarToXY = (angleDeg, radius) => {
     const rad = ((angleDeg - 180) * Math.PI) / 180
     return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) }
   }
+
   const describeArc = (startAngle, endAngle, radius) => {
     const s = polarToXY(startAngle, radius)
     const e = polarToXY(endAngle, radius)
@@ -44,25 +40,35 @@ export default function RiskGauge({ probability = 0, size = 200 }) {
   }
 
   const totalAngle = 180
-  const needleAngle = probability * totalAngle  // 0° = left, 180° = right
-  const nx = polarToXY(needleAngle, r * 0.78)
+  const needleAngle = safeProb * totalAngle // 0° to 180°
+  const needlePoint = polarToXY(needleAngle, r * 0.72)
+  const meta = getRiskMeta(safeProb)
+  const Icon = meta.icon
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center select-none">
       <svg width={size} height={size * 0.72} viewBox={`0 0 ${size} ${size * 0.72}`}>
-        {/* Background track */}
+        <defs>
+          <filter id="gauge-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        {/* Outer Background Track */}
         <path
           d={describeArc(0, 180, r)}
           fill="none"
-          stroke={isDark ? '#1e293b' : '#e2e8f0'}
+          stroke={isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}
           strokeWidth={strokeW}
           strokeLinecap="round"
         />
-        {/* Color zones */}
+
+        {/* Color Zone Segments */}
         {RISK_ZONES.map((z) => (
           <path
             key={z.label}
-            d={describeArc(z.from * 180, z.to * 180, r)}
+            d={describeArc(z.from * 180 + 1, z.to * 180 - 1, r)}
             fill="none"
             stroke={z.color}
             strokeWidth={strokeW}
@@ -70,58 +76,91 @@ export default function RiskGauge({ probability = 0, size = 200 }) {
             opacity={0.3}
           />
         ))}
-        {/* Filled arc up to probability */}
+
+        {/* Active Probability Arc */}
         <motion.path
-          d={describeArc(0, probability * 180, r)}
+          d={describeArc(0, safeProb * 180, r)}
           fill="none"
-          stroke={getRiskColor(probability)}
+          stroke={meta.color}
           strokeWidth={strokeW}
           strokeLinecap="round"
+          filter="url(#gauge-glow)"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
         />
-        {/* Needle */}
+
+        {/* Tick Marks along the arc */}
+        {[0, 25, 50, 75, 100].map((tick) => {
+          const angle = (tick / 100) * 180
+          const inner = polarToXY(angle, r - strokeW * 0.9)
+          const outer = polarToXY(angle, r + strokeW * 0.9)
+          return (
+            <line
+              key={tick}
+              x1={inner.x}
+              y1={inner.y}
+              x2={outer.x}
+              y2={outer.y}
+              stroke={isDark ? 'rgba(255, 255, 255, 0.2)' : '#cbd5e1'}
+              strokeWidth={1.5}
+            />
+          )
+        })}
+
+        {/* Needle Line */}
         <motion.line
           x1={cx}
           y1={cy}
-          x2={cx + r * 0.68}
-          y2={cy}
-          stroke={getRiskColor(probability)}
-          strokeWidth={2.5}
+          x2={needlePoint.x}
+          y2={needlePoint.y}
+          stroke={meta.color}
+          strokeWidth={3}
           strokeLinecap="round"
-          style={{ transformOrigin: `${cx}px ${cy}px` }}
-          initial={{ rotate: 0 }}
-          animate={{ rotate: needleAngle }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
         />
-        {/* Center dot */}
-        <circle cx={cx} cy={cy} r={6} fill={getRiskColor(probability)} />
 
-        {/* Zone labels */}
+        {/* Needle Hub Center */}
+        <circle cx={cx} cy={cy} r={7} fill={meta.color} />
+        <circle cx={cx} cy={cy} r={3} fill={isDark ? '#0e1626' : '#ffffff'} />
+
+        {/* Zone Markers / Labels */}
         {[
-          { angle: 22.5,  label: 'LOW' },
-          { angle: 80,    label: 'MED' },
-          { angle: 135,   label: 'HIGH' },
-          { angle: 162,   label: 'CRIT' },
+          { angle: 18, label: '0%' },
+          { angle: 90, label: '50%' },
+          { angle: 162, label: '100%' },
         ].map(({ angle, label }) => {
-          const pos = polarToXY(angle, r + strokeW * 1.2)
+          const pos = polarToXY(angle, r + strokeW * 1.5)
           return (
-            <text key={label} x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="middle"
-              fontSize={size * 0.055} fill={isDark ? '#475569' : '#94a3b8'} fontWeight="600">
+            <text
+              key={label}
+              x={pos.x}
+              y={pos.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={size * 0.05}
+              fill={isDark ? '#64748b' : '#94a3b8'}
+              fontWeight="600"
+              fontFamily="JetBrains Mono"
+            >
               {label}
             </text>
           )
         })}
       </svg>
 
-      {/* Probability label */}
+      {/* Main Probability Readout */}
       <div className="text-center -mt-2">
-        <div className="text-3xl font-extrabold tracking-tight" style={{ color: getRiskColor(probability) }}>
-          {(probability * 100).toFixed(1)}%
+        <div className="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono-num" style={{ color: meta.color }}>
+          {(safeProb * 100).toFixed(1)}%
         </div>
-        <div className={`text-xs font-bold tracking-widest uppercase mt-0.5`} style={{ color: getRiskColor(probability) }}>
-          {getRiskLabel(probability)} RISK
+        <div className="flex items-center justify-center gap-1.5 mt-1.5">
+          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border tracking-wide ${meta.bg}`}>
+            <Icon size={13} />
+            {meta.label}
+          </span>
         </div>
       </div>
     </div>
