@@ -1330,21 +1330,13 @@ async function generateAlertsReportPDF(doc, context) {
 // Universal Export Dispatcher (Routes to Real, Page-Specific PDF Report)
 // ─────────────────────────────────────────────────────────────────────────────
 export async function exportUniversalReport(pathname = window.location.pathname, context = {}) {
-  const path = pathname.replace(/\/$/, '') || '/'
+  const rawPath = String(pathname || window.location.pathname || '/').toLowerCase().trim()
+  const path = rawPath.replace(/[?#].*$/, '').replace(/\/$/, '') || '/'
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
   let fileName = ''
 
-  if (path === '/' || path === '') {
-    fileName = await generateOverviewReportPDF(doc, context)
-  } else if (path === '/map') {
-    fileName = await generatePHCMapReportPDF(doc, context)
-  } else if (path === '/stockout') {
-    fileName = await generateStockoutReportPDF(doc, context)
-  } else if (path === '/demand') {
-    fileName = await generateDemandForecastReportPDF(doc, context)
-  } else if (path === '/emergency') {
-    // If called on emergency page without simulation run yet
+  if (path.includes('emergency')) {
     return generateEmergencyReportPDF({
       result: context?.result || {
         avg_risk_before: 0.18,
@@ -1363,15 +1355,21 @@ export async function exportUniversalReport(pathname = window.location.pathname,
       patientIncrease: context?.patientIncrease ?? 50,
       supplyDisruption: context?.supplyDisruption ?? 30,
     })
-  } else if (path === '/redistribution') {
+  } else if (path.includes('stockout')) {
+    fileName = await generateStockoutReportPDF(doc, context)
+  } else if (path.includes('demand')) {
+    fileName = await generateDemandForecastReportPDF(doc, context)
+  } else if (path.includes('map')) {
+    fileName = await generatePHCMapReportPDF(doc, context)
+  } else if (path.includes('redistribution')) {
     fileName = await generateRedistributionReportPDF(doc, context)
-  } else if (path === '/resilience') {
+  } else if (path.includes('resilience')) {
     fileName = await generateResilienceReportPDF(doc, context)
-  } else if (path === '/models') {
+  } else if (path.includes('model')) {
     fileName = await generateModelComparisonReportPDF(doc, context)
-  } else if (path === '/federated') {
+  } else if (path.includes('federated')) {
     fileName = await generateFederatedReportPDF(doc, context)
-  } else if (path === '/alerts') {
+  } else if (path.includes('alert')) {
     fileName = await generateAlertsReportPDF(doc, context)
   } else {
     fileName = await generateOverviewReportPDF(doc, context)
