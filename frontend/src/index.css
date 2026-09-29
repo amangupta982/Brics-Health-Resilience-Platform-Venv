@@ -2,71 +2,91 @@
 
 /* ─── Global Design Tokens ─── */
 :root {
-  --bg-deep: #060a14;
-  --bg: #0b1120;
-  --bg-elevated: #111a30;
-  --panel: #111a30;
-  --panel-solid: #15223e;
-  --panel-border: rgba(56, 90, 150, 0.22);
-  --panel-hover: rgba(26, 40, 72, 0.9);
+  /* Dark Mode (Default Command Center Palette) */
+  --bg-deep: #060911;
+  --bg: #090e18;
+  --bg-elevated: #0f172a;
+  --panel: #0e1626;
+  --panel-solid: #121c32;
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-subtle: rgba(255, 255, 255, 0.04);
+  --panel-hover: rgba(255, 255, 255, 0.035);
 
-  --text: #f1f5f9;
+  --text: #f8fafc;
   --text-secondary: #94a3b8;
   --text-dim: #64748b;
 
-  --accent: #3b82f6;
-  --accent-light: #60a5fa;
-  --accent-glow: rgba(59, 130, 246, 0.25);
-  --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  /* Clinical / Operational Accents */
+  --accent: #0284c7;
+  --accent-light: #38bdf8;
+  --accent-glow: rgba(2, 132, 199, 0.2);
+  --accent-subtle: rgba(2, 132, 199, 0.1);
+  --accent-border: rgba(56, 189, 248, 0.25);
 
-  --critical: #ef4444;
-  --critical-bg: rgba(239, 68, 68, 0.12);
-  --critical-border: rgba(239, 68, 68, 0.3);
+  /* Status Colors */
+  --critical: #f43f5e;
+  --critical-bg: rgba(244, 63, 94, 0.12);
+  --critical-border: rgba(244, 63, 94, 0.28);
+  --critical-text: #fb7185;
+
   --high: #f97316;
   --high-bg: rgba(249, 115, 22, 0.12);
-  --high-border: rgba(249, 115, 22, 0.3);
+  --high-border: rgba(249, 115, 22, 0.28);
+  --high-text: #fb923c;
+
   --medium: #eab308;
   --medium-bg: rgba(234, 179, 8, 0.12);
-  --medium-border: rgba(234, 179, 8, 0.3);
-  --low: #22c55e;
-  --low-bg: rgba(34, 197, 94, 0.12);
-  --low-border: rgba(34, 197, 94, 0.3);
+  --medium-border: rgba(234, 179, 8, 0.28);
+  --medium-text: #facc15;
 
-  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%);
+  --low: #10b981;
+  --low-bg: rgba(16, 185, 129, 0.12);
+  --low-border: rgba(16, 185, 129, 0.28);
+  --low-text: #34d399;
+
   --sidebar-width: 260px;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 [data-theme="light"], .light {
-  --bg-deep: #f1f5f9;
+  --bg-deep: #eef2f6;
   --bg: #f8fafc;
   --bg-elevated: #ffffff;
   --panel: #ffffff;
   --panel-solid: #ffffff;
   --panel-border: #e2e8f0;
-  --panel-hover: #f1f5f9;
+  --panel-border-subtle: #f1f5f9;
+  --panel-hover: #f8fafc;
 
   --text: #0f172a;
   --text-secondary: #475569;
   --text-dim: #94a3b8;
 
-  --accent: #2563eb;
-  --accent-light: #3b82f6;
-  --accent-glow: rgba(37, 99, 235, 0.15);
-  --accent-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
+  --accent: #0284c7;
+  --accent-light: #0369a1;
+  --accent-glow: rgba(2, 132, 199, 0.12);
+  --accent-subtle: #f0f9ff;
+  --accent-border: #bae6fd;
 
-  --critical: #dc2626;
-  --critical-bg: #fef2f2;
-  --critical-border: #fecaca;
+  --critical: #e11d48;
+  --critical-bg: #fff1f2;
+  --critical-border: #fecdd3;
+  --critical-text: #be123c;
+
   --high: #ea580c;
   --high-bg: #fff7ed;
   --high-border: #ffedd5;
+  --high-text: #c2410c;
+
   --medium: #d97706;
   --medium-bg: #fffbeb;
   --medium-border: #fef3c7;
-  --low: #16a34a;
-  --low-bg: #f0fdf4;
-  --low-border: #bbf7d0;
+  --medium-text: #b45309;
+
+  --low: #059669;
+  --low-bg: #ecfdf5;
+  --low-border: #a7f3d0;
+  --low-text: #047857;
 }
 
 *, *::before, *::after {
@@ -78,82 +98,107 @@ body {
   color: var(--text);
   margin: 0;
   padding: 0;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Monospace Figures & Data Typography */
+.font-mono-num {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
-  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.45);
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* Professional Card Surfaces */
+.card-pro {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-pro:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="light"] .card-pro:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Status Badges */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 9999px;
+  padding: 2.5px 8px;
+  border-radius: 6px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .badge.CRITICAL, .badge.critical {
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.28);
+  background: var(--critical-bg);
+  color: var(--critical-text);
+  border: 1px solid var(--critical-border);
 }
 .badge.HIGH, .badge.high {
-  background: rgba(249, 115, 22, 0.12);
-  color: #fb923c;
-  border: 1px solid rgba(249, 115, 22, 0.28);
+  background: var(--high-bg);
+  color: var(--high-text);
+  border: 1px solid var(--high-border);
 }
 .badge.MEDIUM, .badge.medium, .badge.watch {
-  background: rgba(234, 179, 8, 0.12);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.28);
+  background: var(--medium-bg);
+  color: var(--medium-text);
+  border: 1px solid var(--medium-border);
 }
 .badge.LOW, .badge.low, .badge.stable {
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: var(--low-bg);
+  color: var(--low-text);
+  border: 1px solid var(--low-border);
 }
 .badge.INFO, .badge.info {
-  background: rgba(59, 130, 246, 0.12);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.28);
+  background: rgba(2, 132, 199, 0.1);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 /* Leaflet Map Customization */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 1rem;
-  background: #060a14 !important;
+  border-radius: 16px;
+  background: #080c16 !important;
   font-family: inherit;
 }
 
 .leaflet-popup-content-wrapper {
-  background: #0f172a !important;
+  background: #0e1626 !important;
   color: #f8fafc !important;
-  border: 1px solid rgba(56, 90, 150, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
   padding: 4px;
 }
 
@@ -161,11 +206,11 @@ body {
   background: #ffffff !important;
   color: #0f172a !important;
   border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
 }
 
 .leaflet-popup-tip {
-  background: #0f172a !important;
+  background: #0e1626 !important;
 }
 [data-theme="light"] .leaflet-popup-tip {
   background: #ffffff !important;
@@ -173,9 +218,9 @@ body {
 
 /* Loading Skeletons */
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
   background-size: 200% 100%;
-  animation: skeleton-pulse 1.5s infinite;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
   border-radius: 8px;
 }
 
