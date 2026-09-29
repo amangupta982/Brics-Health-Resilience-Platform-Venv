@@ -4,10 +4,12 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid
 } from 'recharts'
-import { ShieldCheck, Award, AlertTriangle, Activity, Info, BarChart2, CheckCircle2, ChevronRight } from 'lucide-react'
+import { ShieldCheck, Award, AlertTriangle, Activity, Info, BarChart2, CheckCircle2, ChevronRight, FileDown } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
 import KpiCard from '../components/KpiCard.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 const DEFAULT_RESILIENCE_SCORES = [
   { district: 'Bengaluru Rural', resilience_score: 89.4, medicine_availability: 92.5, bed_capacity: 86.0, staffing_adequacy: 88.0, emergency_readiness: 91.0, weakest_factor: 'bed_capacity' },
@@ -63,6 +65,40 @@ export default function DistrictResilience() {
 
   return (
     <div className="space-y-6">
+
+      {/* ── Top Header & Report Download Banner ── */}
+      <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${cardCls}`}>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              District Resilience & Vulnerability Analytics
+            </h2>
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${isDark ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+              MULTI-FACTOR INDEX
+            </span>
+          </div>
+          <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Evaluates 4 systemic vulnerability vectors: Bed Capacity, Staffing, Critical Medicine, and Outbreak Response.
+          </p>
+        </div>
+
+        <button
+          onClick={async () => {
+            try {
+              toast.loading('Exporting resilience index report...', { id: 'res-dl' })
+              const fileName = await exportUniversalReport('/resilience')
+              toast.success(`Report downloaded: ${fileName}`, { id: 'res-dl' })
+            } catch (err) {
+              console.error(err)
+              toast.error('Failed to generate report PDF', { id: 'res-dl' })
+            }
+          }}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-all cursor-pointer self-start sm:self-auto shrink-0"
+        >
+          <FileDown size={14} />
+          <span>Download Report (PDF)</span>
+        </button>
+      </div>
 
       {/* ── District Ranking & Radar Analytics ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

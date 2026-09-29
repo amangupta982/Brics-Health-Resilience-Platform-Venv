@@ -3,12 +3,13 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
   Bell, Search, AlertTriangle, ShieldCheck, Clock, CheckCircle,
-  ArrowUpRight, AlertOctagon, Filter, Check
+  ArrowUpRight, AlertOctagon, Filter, Check, FileDown
 } from 'lucide-react'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
 import StatusBadge from '../components/StatusBadge.jsx'
 import toast from 'react-hot-toast'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 export default function Alerts() {
   const { theme } = useTheme()
@@ -89,16 +90,35 @@ export default function Alerts() {
           })}
         </div>
 
-        {/* Search */}
-        <div className="relative min-w-[240px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Filter incidents by keyword..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className={`w-full pl-9 pr-3 py-1.5 text-xs rounded-xl outline-none transition-colors ${inputCls}`}
-          />
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative min-w-[200px]">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Filter incidents by keyword..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className={`w-full pl-9 pr-3 py-1.5 text-xs rounded-xl outline-none transition-colors ${inputCls}`}
+            />
+          </div>
+
+          <button
+            onClick={async () => {
+              try {
+                toast.loading('Exporting incident alerts log...', { id: 'al-dl' })
+                const fileName = await exportUniversalReport('/alerts')
+                toast.success(`Log downloaded: ${fileName}`, { id: 'al-dl' })
+              } catch (err) {
+                console.error(err)
+                toast.error('Failed to export alerts PDF', { id: 'al-dl' })
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+          >
+            <FileDown size={14} />
+            <span>Download Report (PDF)</span>
+          </button>
         </div>
       </div>
 

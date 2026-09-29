@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2, Search, Filter, AlertTriangle, Users, Bed,
-  Stethoscope, MapPin, ArrowRight, ShieldCheck, Zap, X, Layers
+  Stethoscope, MapPin, ArrowRight, ShieldCheck, Zap, X, Layers, FileDown
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import 'leaflet/dist/leaflet.css'
 import api from '../services/api.js'
 import { useTheme } from '../components/ThemeContext.jsx'
 import KpiCard from '../components/KpiCard.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 // Dynamic map view repositioning
 function ChangeView({ center, zoom }) {
@@ -277,6 +279,24 @@ export default function PHCMapPage() {
               <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Remote / Tribal</span>
             </div>
           </div>
+
+          {/* Download Map Report Button */}
+          <button
+            onClick={async () => {
+              try {
+                toast.loading('Exporting GIS map report...', { id: 'map-dl' })
+                const fileName = await exportUniversalReport('/map')
+                toast.success(`Report downloaded: ${fileName}`, { id: 'map-dl' })
+              } catch (err) {
+                console.error(err)
+                toast.error('Failed to export map report', { id: 'map-dl' })
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer ml-auto sm:ml-0"
+          >
+            <FileDown size={13} />
+            <span>Download Report</span>
+          </button>
         </div>
       </div>
 

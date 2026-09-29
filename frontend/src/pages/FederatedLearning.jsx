@@ -4,10 +4,11 @@ import { motion } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell
 } from 'recharts'
-import { Globe, Shield, Activity, Loader2, Award, Lock, CheckCircle2, Cpu } from 'lucide-react'
+import { Globe, Shield, Activity, Loader2, Award, Lock, CheckCircle2, Cpu, FileDown } from 'lucide-react'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
 import KpiCard from '../components/KpiCard.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 const CLIENT_FLAGS = {
   India: { flag: '🇮🇳', color: '#f59e0b', name: 'India Node', jurisdiction: 'ICMR / NHSRC Grid' },
@@ -105,6 +106,23 @@ export default function FederatedLearning() {
             >
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Globe size={15} />}
               {loading ? 'Aggregating Sovereign Nodes...' : 'Execute Flower FedAvg'}
+            </button>
+
+            <button
+              onClick={async () => {
+                try {
+                  toast.loading('Exporting federated learning briefing...', { id: 'fl-dl' })
+                  const fileName = await exportUniversalReport('/federated')
+                  toast.success(`Briefing downloaded: ${fileName}`, { id: 'fl-dl' })
+                } catch {
+                  toast.error('Failed to generate briefing.', { id: 'fl-dl' })
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+              title="Download Sovereign Federated Learning Audit Report as PDF"
+            >
+              <FileDown size={15} />
+              <span>Download Report (PDF)</span>
             </button>
           </div>
         </div>
