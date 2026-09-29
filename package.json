@@ -1,0 +1,13 @@
+{
+  "name": "medical-repo-project",
+  "version": "1.0.0",
+  "description": "BRICS Health Resilience Platform - Predictive AI & Logistics Command",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node start-dev.js",
+    "start": "node start-dev.js",
+    "backend": "cd backend && PYTHONPATH=. ../venv/bin/uvicorn app.main:app --reload --port 8000",
+    "frontend": "cd frontend && npm run dev"
+  }
+}

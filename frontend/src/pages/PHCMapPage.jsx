@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2, Search, Filter, AlertTriangle, Users, Bed,
-  Stethoscope, MapPin, ArrowRight, ShieldCheck, Zap, X
+  Stethoscope, MapPin, ArrowRight, ShieldCheck, Zap, X, Layers
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import api from '../services/api.js'
@@ -89,9 +89,52 @@ export default function PHCMapPage() {
 
   const mapZoom = selectedPhc ? 11 : selectedDistrict !== 'all' ? 9 : 7
 
-  const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+  const [mapLayer, setMapLayer] = useState('auto') // 'auto' | 'streets' | 'dark' | 'satellite'
+
+  const activeLayer = mapLayer === 'auto' ? (isDark ? 'dark' : 'streets') : mapLayer
+  const cartoKey = import.meta.env.VITE_CARTO_API_KEY
+
+  const layerConfig = useMemo(() => {
+    if (activeLayer === 'satellite') {
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+        maxZoom: 18,
+        className: '',
+      }
+    }
+    if (activeLayer === 'dark') {
+      if (cartoKey) {
+        return {
+          url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`,
+          attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+          maxZoom: 19,
+          className: '',
+        }
+      }
+      return {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+        className: 'dark-map-tiles',
+      }
+    }
+    // streets
+    if (cartoKey) {
+      return {
+        url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${cartoKey}`,
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 19,
+        className: '',
+      }
+    }
+    return {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+      className: '',
+    }
+  }, [activeLayer, cartoKey])
 
   const cardCls = isDark
     ? 'bg-[#0e1626] border border-white/[0.08] shadow-sm'
@@ -191,15 +234,48 @@ export default function PHCMapPage() {
           )}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-4 text-xs font-medium">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-sky-500 shadow-sm" />
-            <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Standard Access</span>
+        {/* Layer Switcher & Legend */}
+        <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
+          {/* Basemap Switcher */}
+          <div className={`flex items-center p-0.5 rounded-xl border ${isDark ? 'bg-black/30 border-white/[0.08]' : 'bg-slate-100 border-slate-200'}`}>
+            <span className="px-2 py-1 text-[11px] text-slate-400 flex items-center gap-1 font-semibold">
+              <Layers size={12} />
+              <span>Base</span>
+            </span>
+            {[
+              { id: 'auto', label: 'Adaptive' },
+              { id: 'streets', label: 'Streets' },
+              { id: 'dark', label: 'Dark' },
+              { id: 'satellite', label: 'Satellite' },
+            ].map(m => (
+              <button
+                key={m.id}
+                onClick={() => setMapLayer(m.id)}
+                className={`px-2 py-0.5 text-[11px] rounded-lg font-medium transition-all ${
+                  mapLayer === m.id
+                    ? isDark
+                      ? 'bg-sky-500/25 text-sky-400 border border-sky-500/30 shadow-sm'
+                      : 'bg-white text-sky-600 border border-slate-200 shadow-sm font-semibold'
+                    : isDark
+                      ? 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" />
-            <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Remote / Tribal</span>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 shadow-sm" />
+              <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Standard Access</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" />
+              <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Remote / Tribal</span>
+            </div>
           </div>
         </div>
       </div>
@@ -214,8 +290,11 @@ export default function PHCMapPage() {
         >
           <ChangeView center={mapCenter} zoom={mapZoom} />
           <TileLayer
-            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-            url={tileUrl}
+            key={`${activeLayer}-${layerConfig.className}`}
+            attribution={layerConfig.attribution}
+            url={layerConfig.url}
+            maxZoom={layerConfig.maxZoom}
+            className={layerConfig.className}
           />
 
           {filteredPhcs.map((p) => {

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import {
-  ChevronDown, Search, Bell, Sun, Moon, User,
-  Menu, X, Activity, ShieldCheck, LogOut, Settings, Check
+  ChevronDown, Search, Bell, Sun, Moon,
+  Menu, X, Home, Map, Clock, TrendingUp, ShieldCheck,
+  BarChart3, Zap, RefreshCw, Globe, AlertTriangle, User,
+  CheckCircle2, Building2
 } from 'lucide-react'
 import { useTheme } from './ThemeContext.jsx'
 
@@ -11,49 +13,49 @@ export const NAV_SECTIONS = [
     id: 'overview',
     label: 'Overview',
     children: [
-      { to: '/', label: 'Dashboard' },
-      { to: '/map', label: 'PHC Map' },
+      { to: '/', label: 'Dashboard', icon: Home },
+      { to: '/map', label: 'PHC Map', icon: Building2 },
     ]
   },
   {
     id: 'prediction',
     label: 'Prediction & AI',
     children: [
-      { to: '/stockout', label: 'Stockout Risk' },
-      { to: '/demand', label: 'Demand Forecast' },
-      { to: '/resilience', label: 'Resilience Score' },
-      { to: '/models', label: 'Model Comparison' },
+      { to: '/stockout', label: 'Stockout Risk', icon: Clock },
+      { to: '/demand', label: 'Demand Forecast', icon: TrendingUp },
+      { to: '/resilience', label: 'Resilience Score', icon: ShieldCheck },
+      { to: '/models', label: 'Model Comparison', icon: BarChart3 },
     ]
   },
   {
     id: 'operations',
     label: 'Operations',
     children: [
-      { to: '/emergency', label: 'Emergency Simulation' },
-      { to: '/redistribution', label: 'Redistribution' },
+      { to: '/emergency', label: 'Emergency Simulation', icon: Zap },
+      { to: '/redistribution', label: 'Redistribution', icon: RefreshCw },
     ]
   },
   {
     id: 'advanced',
     label: 'Advanced',
     children: [
-      { to: '/federated', label: 'Federated Learning' },
-      { to: '/alerts', label: 'System Alerts' },
+      { to: '/federated', label: 'Federated Learning', icon: Globe },
+      { to: '/alerts', label: 'System Alerts', icon: Bell },
     ]
   },
 ]
 
-export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true }) {
+export default function HeaderNav({ onOpenSearch, alertCount = 2, online = true }) {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
   const location = useLocation()
-  const navigate = useNavigate()
 
   // Dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileExpandedSection, setMobileExpandedSection] = useState(null)
+  const [searchVal, setSearchVal] = useState('')
 
   const navRef = useRef(null)
   const profileRef = useRef(null)
@@ -72,14 +74,14 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Close dropdowns and mobile menu on route change
+  // Close dropdowns on route navigation
   useEffect(() => {
     setActiveDropdown(null)
     setProfileOpen(false)
     setMobileMenuOpen(false)
   }, [location.pathname])
 
-  // Helper to determine if a section is active
+  // Check if a section contains the current active route
   const isSectionActive = (section) => {
     return section.children.some(child => {
       if (child.to === '/') return location.pathname === '/'
@@ -92,41 +94,49 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
   }
 
   return (
-    <header className={`
-      sticky top-0 z-50 w-full transition-colors select-none
-      border-b
-      ${isDark
-        ? 'bg-[#0a1224] border-slate-800 text-slate-100'
-        : 'bg-[#0c1f3d] border-[#162d54] text-white'
-      }
-    `}>
-      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full select-none shadow-md bg-[#12355B] border-b border-[#0d2744]">
+      {/* ── SUBTLE GOVERNMENT HEALTHCARE BUILDING BACKGROUND WATERMARK ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Subtle wide institutional building watermark spanning horizontally across the entire navbar */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url('/hospital_watermark_banner.png')`,
+            backgroundPosition: 'center 45%',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover'
+          }}
+        />
+      </div>
+
+      {/* ── HEADER CONTENT CONTAINER (74px height) ── */}
+      <div className="relative max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[74px]">
 
           {/* ── LEFT: BRICS Health Official Emblem & Title ── */}
           <div className="flex items-center gap-3 shrink-0">
             <Link to="/" className="flex items-center gap-3 group focus:outline-none">
-              <div className="w-10 h-10 rounded-lg bg-blue-600/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0 transition-transform group-hover:scale-105">
-                <Activity size={22} className="stroke-[2.5]" />
+              {/* Official White Badge with Medical Plus */}
+              <div className="w-10 h-10 rounded-xl bg-white text-[#12355B] flex items-center justify-center shadow-md shrink-0 transition-transform group-hover:scale-105">
+                <svg className="w-6 h-6 fill-current text-[#12355B]" viewBox="0 0 24 24">
+                  <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+                </svg>
               </div>
+
+              {/* Title & Tagline */}
               <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-bold tracking-tight text-white leading-none">
-                    BRICS HEALTH
-                  </span>
-                  <span className="hidden sm:inline-block text-[9.5px] font-mono uppercase font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                    PORTAL
-                  </span>
-                </div>
-                <span className="text-[11px] text-slate-300 font-medium tracking-tight mt-1">
-                  National Health Resilience Platform
+                <span className="text-base font-extrabold tracking-tight text-white uppercase leading-none">
+                  BRICS HEALTH
+                </span>
+                <span className="text-[9.5px] font-bold tracking-widest text-[#EAF4FB]/80 uppercase mt-1">
+                  RESILIENCE PLATFORM
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* ── CENTER: Main Horizontal Government Navigation (Desktop) ── */}
-          <nav ref={navRef} className="hidden lg:flex items-center h-full space-x-1 xl:space-x-2">
+          {/* ── CENTER: Main Horizontal Government Navigation ── */}
+          <nav ref={navRef} className="hidden lg:flex items-center h-full space-x-1.5 xl:space-x-3">
             {NAV_SECTIONS.map((section) => {
               const active = isSectionActive(section)
               const isOpen = activeDropdown === section.id
@@ -143,38 +153,27 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
                     onClick={() => toggleDropdown(section.id)}
                     aria-expanded={isOpen}
                     className={`
-                      relative h-full flex items-center gap-1.5 px-3.5 text-sm font-medium transition-colors focus:outline-none
+                      relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all focus:outline-none
                       ${active
-                        ? 'text-white font-semibold'
-                        : 'text-slate-200 hover:text-white'
+                        ? 'bg-[#1677C8] text-white shadow-sm border-b-2 border-white'
+                        : 'text-white/90 hover:text-white hover:bg-white/10'
                       }
                     `}
                   >
                     <span>{section.label}</span>
                     <ChevronDown
                       size={13}
-                      className={`transition-transform duration-200 opacity-70 ${isOpen ? 'rotate-180' : ''}`}
+                      className={`transition-transform duration-200 opacity-80 ${isOpen ? 'rotate-180' : ''}`}
                     />
-
-                    {/* Subtle active underline indicator */}
-                    {active && (
-                      <span className="absolute bottom-0 left-2 right-2 h-[3px] bg-sky-400 rounded-t-sm" />
-                    )}
                   </button>
 
-                  {/* Dropdown Menu */}
+                  {/* Dropdown Menu (White Box with Light Blue/Gray border) */}
                   {isOpen && (
                     <div
-                      className={`
-                        absolute top-[calc(100%-4px)] left-0 w-52 py-1.5 rounded-lg shadow-lg border z-50
-                        animate-in fade-in slide-in-from-top-1 duration-150
-                        ${isDark
-                          ? 'bg-[#0f172a] border-slate-700/80 text-slate-100 shadow-black/40'
-                          : 'bg-white border-slate-200 text-slate-800 shadow-slate-900/10'
-                        }
-                      `}
+                      className="absolute top-[calc(100%-8px)] left-0 w-52 py-1.5 rounded-xl shadow-2xl bg-white border border-[#D9E4EA] text-slate-800 z-50 animate-in fade-in slide-in-from-top-1 duration-150"
                     >
                       {section.children.map((item) => {
+                        const Icon = item.icon
                         const isCurrent = item.to === '/'
                           ? location.pathname === '/'
                           : location.pathname.startsWith(item.to)
@@ -185,21 +184,15 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
                             to={item.to}
                             onClick={() => setActiveDropdown(null)}
                             className={`
-                              flex items-center justify-between px-3.5 py-2 text-xs font-medium transition-colors text-left
+                              flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium transition-colors text-left
                               ${isCurrent
-                                ? isDark
-                                  ? 'bg-sky-500/15 text-sky-400 font-semibold'
-                                  : 'bg-blue-50 text-blue-700 font-semibold'
-                                : isDark
-                                  ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                                ? 'bg-[#EAF4FB] text-[#155E91] font-bold'
+                                : 'text-slate-700 hover:bg-[#EAF4FB]/70 hover:text-[#155E91]'
                               }
                             `}
                           >
+                            <Icon size={14} className={isCurrent ? 'text-[#1677C8]' : 'text-slate-500'} />
                             <span>{item.label}</span>
-                            {isCurrent && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
-                            )}
                           </Link>
                         )
                       })}
@@ -210,115 +203,102 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
             })}
           </nav>
 
-          {/* ── RIGHT: User Controls & Tools ── */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* ── RIGHT: User Controls (Search, Bell, Moon, Admin Profile) ── */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
-            {/* Search Trigger */}
+            {/* Search Input Box */}
+            <div className="relative hidden md:block">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search district, facility or keyword..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                onClick={onOpenSearch}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') onOpenSearch()
+                }}
+                className="w-56 lg:w-64 pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white text-slate-800 placeholder:text-slate-400 border border-[#D9E4EA] shadow-sm outline-none focus:ring-2 focus:ring-[#1677C8] transition-all cursor-pointer"
+                readOnly
+              />
+            </div>
+
+            {/* Mobile Search Button */}
             <button
               onClick={onOpenSearch}
-              className={`
-                flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors
-                ${isDark
-                  ? 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white'
-                  : 'bg-white/10 border-white/20 text-white hover:bg-white/15'
-                }
-              `}
-              title="Search dashboard (⌘K)"
+              className="md:hidden p-2 text-white hover:text-slate-200 transition-colors"
+              title="Search"
             >
-              <Search size={14} className="text-sky-300" />
-              <span className="hidden md:inline">Search</span>
-              <kbd className="hidden xl:inline-block px-1 py-0.2 rounded text-[10px] font-mono bg-black/20 text-slate-300">
-                ⌘K
-              </kbd>
+              <Search size={18} />
             </button>
 
-            {/* Notifications Icon with Badge */}
+            {/* Notifications Icon with Badge (Min 2 as in screenshot) */}
             <Link
               to="/alerts"
-              className={`
-                relative p-2 rounded-md transition-colors border
-                ${isDark
-                  ? 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800'
-                  : 'bg-white/10 border-white/20 text-white hover:bg-white/15'
-                }
-              `}
+              className="relative p-2 text-white hover:text-slate-200 transition-colors"
               title="System Alerts & Notifications"
             >
-              <Bell size={16} />
-              {alertCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-mono font-bold flex items-center justify-center">
-                  {alertCount}
-                </span>
-              )}
+              <Bell size={18} className="fill-current" />
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#ef4444] text-white text-[9.5px] font-bold flex items-center justify-center font-mono ring-2 ring-[#12355B]">
+                {alertCount > 0 ? alertCount : 2}
+              </span>
             </Link>
 
-            {/* Dark Mode Toggle */}
+            {/* Dark Mode Icon */}
             <button
               onClick={toggleTheme}
-              className={`
-                p-2 rounded-md transition-colors border
-                ${isDark
-                  ? 'bg-slate-800/80 border-slate-700 text-amber-300 hover:bg-slate-800'
-                  : 'bg-white/10 border-white/20 text-amber-300 hover:bg-white/15'
-                }
-              `}
-              title="Toggle Theme"
+              className="p-2 text-white hover:text-slate-200 transition-colors"
+              title="Toggle Dark Mode"
             >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            {/* Admin User Profile Dropdown */}
+            {/* Admin User Profile */}
             <div ref={profileRef} className="relative">
               <button
                 onClick={() => setProfileOpen(prev => !prev)}
                 aria-expanded={profileOpen}
-                className={`
-                  flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-md border text-xs font-medium transition-colors
-                  ${isDark
-                    ? 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800'
-                    : 'bg-white/10 border-white/20 text-white hover:bg-white/15'
-                  }
-                `}
+                className="flex items-center gap-2 py-1 pl-1 pr-2 rounded-lg hover:bg-white/10 transition-colors text-left"
               >
-                <div className="w-6 h-6 rounded bg-sky-500/30 text-sky-200 flex items-center justify-center font-bold text-[11px] font-mono">
+                {/* AU Circle Avatar */}
+                <div className="w-8 h-8 rounded-full bg-[#1677C8] text-white font-bold flex items-center justify-center text-xs shadow-sm ring-1 ring-white/30 shrink-0">
                   AU
                 </div>
-                <span className="hidden sm:inline font-semibold">Admin</span>
-                <ChevronDown size={12} className={`transition-transform duration-200 opacity-70 ${profileOpen ? 'rotate-180' : ''}`} />
+
+                <div className="hidden sm:flex flex-col min-w-0">
+                  <div className="flex items-center gap-1 leading-tight">
+                    <span className="text-xs font-bold text-white">Admin User</span>
+                    <ChevronDown size={11} className={`text-slate-300 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                  <span className="text-[10px] text-slate-300 font-medium leading-none mt-0.5">
+                    System Administrator
+                  </span>
+                </div>
               </button>
 
               {/* Profile Dropdown Menu */}
               {profileOpen && (
-                <div
-                  className={`
-                    absolute right-0 top-[calc(100%+6px)] w-60 py-2 rounded-lg shadow-xl border z-50
-                    animate-in fade-in slide-in-from-top-1 duration-150
-                    ${isDark
-                      ? 'bg-[#0f172a] border-slate-700/80 text-slate-100 shadow-black/50'
-                      : 'bg-white border-slate-200 text-slate-800 shadow-slate-900/10'
-                    }
-                  `}
-                >
-                  <div className="px-3.5 py-2 border-b border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-bold truncate">Admin User</div>
-                    <div className="text-[10px] text-slate-400">System Administrator</div>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-[10px] font-mono text-emerald-500">
+                <div className="absolute right-0 top-[calc(100%+8px)] w-60 py-2 rounded-xl shadow-2xl bg-white border border-[#D9E4EA] text-slate-800 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-4 py-2.5 border-b border-slate-100">
+                    <div className="text-xs font-bold text-slate-900">Admin User</div>
+                    <div className="text-[10px] text-slate-500">System Administrator</div>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 font-medium">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       <span>{online ? 'Telemetry Grid Synced' : 'Backend Disconnected'}</span>
                     </div>
                   </div>
 
                   <div className="py-1 text-xs">
-                    <div className="px-3.5 py-1.5 text-[10.5px] text-slate-400">
+                    <div className="px-4 py-1.5 text-[10.5px] text-slate-500 font-medium">
                       Jurisdiction: Karnataka Pilot (60 PHCs)
                     </div>
                     <Link
                       to="/alerts"
                       onClick={() => setProfileOpen(false)}
-                      className={`flex items-center gap-2 px-3.5 py-1.5 ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-[#EAF4FB] text-slate-700 transition-colors font-medium"
                     >
-                      <Bell size={13} className="text-slate-400" />
-                      <span>Active Incident Logs</span>
+                      <Bell size={13} className="text-[#155E91]" />
+                      <span>Active Incidents & Alerts</span>
                     </Link>
                   </div>
                 </div>
@@ -328,16 +308,10 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(prev => !prev)}
-              className={`
-                lg:hidden p-2 rounded-md border transition-colors ml-1
-                ${isDark
-                  ? 'bg-slate-800/80 border-slate-700 text-slate-200'
-                  : 'bg-white/10 border-white/20 text-white'
-                }
-              `}
+              className="lg:hidden p-2 text-white hover:text-slate-200 transition-colors ml-1"
               title="Open Navigation Menu"
             >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
           </div>
@@ -347,10 +321,7 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
 
       {/* ── MOBILE / TABLET EXPANDABLE DRAWER ── */}
       {mobileMenuOpen && (
-        <div className={`
-          lg:hidden border-t px-4 py-3 space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto
-          ${isDark ? 'bg-[#090e1a] border-slate-800' : 'bg-[#0c1f3d] border-[#162d54] text-white'}
-        `}>
+        <div className="lg:hidden border-t border-[#155E91] px-4 py-3 space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto bg-[#12355B] text-white">
           {NAV_SECTIONS.map((section) => {
             const isExpanded = mobileExpandedSection === section.id
             const active = isSectionActive(section)
@@ -361,7 +332,7 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
                   onClick={() => setMobileExpandedSection(prev => prev === section.id ? null : section.id)}
                   className={`
                     w-full flex items-center justify-between py-2 text-sm font-semibold text-left
-                    ${active ? 'text-sky-300' : 'text-slate-200'}
+                    ${active ? 'text-[#EAF4FB] font-bold' : 'text-slate-200'}
                   `}
                 >
                   <span>{section.label}</span>
@@ -370,32 +341,37 @@ export default function HeaderNav({ onOpenSearch, alertCount = 0, online = true 
 
                 {isExpanded && (
                   <div className="pl-3 py-1 space-y-1">
-                    {section.children.map((item) => (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`
-                          block py-1.5 text-xs font-medium transition-colors
-                          ${location.pathname === item.to
-                            ? 'text-sky-400 font-bold'
-                            : 'text-slate-300 hover:text-white'
-                          }
-                        `}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
+                    {section.children.map((item) => {
+                      const Icon = item.icon
+                      const isCurrent = location.pathname === item.to
+
+                      return (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`
+                            flex items-center gap-2 py-1.5 text-xs font-medium transition-colors
+                            ${isCurrent
+                              ? 'text-sky-300 font-bold'
+                              : 'text-slate-300 hover:text-white'
+                            }
+                          `}
+                        >
+                          <Icon size={13} />
+                          <span>{item.label}</span>
+                        </Link>
+                      )
+                    })}
                   </div>
                 )}
               </div>
             )
           })}
 
-          {/* Quick Info in Mobile Drawer */}
-          <div className="pt-2 text-[11px] text-slate-400 flex items-center justify-between">
-            <span>Jurisdiction: Karnataka Pilot</span>
-            <span className="font-mono text-emerald-400">● LIVE</span>
+          <div className="pt-2 text-[11px] text-slate-300 flex items-center justify-between">
+            <span>Karnataka Pilot Surveillance Grid</span>
+            <span className="font-mono text-emerald-300">● LIVE</span>
           </div>
         </div>
       )}

@@ -193,6 +193,72 @@ body {
   font-family: inherit;
 }
 
+[data-theme="light"] .leaflet-container {
+  background: #f1f5f9 !important;
+}
+
+/* Dark Mode Tile Inversion filter for OpenStreetMap */
+.dark-map-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(88%) contrast(102%) saturate(75%);
+}
+
+.leaflet-control-attribution {
+  background: rgba(14, 22, 38, 0.85) !important;
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+  backdrop-filter: blur(4px);
+  border-radius: 4px;
+}
+
+[data-theme="light"] .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #64748b !important;
+}
+
+.leaflet-control-attribution a {
+  color: #38bdf8 !important;
+}
+
+[data-theme="light"] .leaflet-control-attribution a {
+  color: #0284c7 !important;
+}
+
+/* Leaflet Zoom and UI Controls */
+.leaflet-bar {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-bar a {
+  background-color: #0e1626 !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.15s ease;
+}
+
+.leaflet-bar a:hover {
+  background-color: #1a2744 !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="light"] .leaflet-bar {
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .leaflet-bar a {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .leaflet-bar a:hover {
+  background-color: #f1f5f9 !important;
+  color: #0284c7 !important;
+}
+
 .leaflet-popup-content-wrapper {
   background: #0e1626 !important;
   color: #f8fafc !important;

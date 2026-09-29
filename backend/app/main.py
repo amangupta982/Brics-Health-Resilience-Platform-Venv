@@ -10,10 +10,13 @@ Production features:
 - API versioning: /api/v1/* with /api/* backward-compatible aliases
 """
 import time
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.core.config import get_settings
 from app.core.logging import setup_logging, get_logger
@@ -111,11 +114,11 @@ app.include_router(predict.router)
 app.include_router(ai_features.router)
 
 
-# ── Health Endpoints ─────────────────────────────────────────────────────
+# ── Health & Info Endpoints ──────────────────────────────────────────────
 
-@app.get("/", tags=["system"])
-def root():
-    """Root endpoint — service info."""
+@app.get("/api/info", tags=["system"])
+def service_info():
+    """Service metadata endpoint."""
     return {
         "status": "ok",
         "service": settings.APP_NAME,
@@ -181,3 +184,45 @@ def health_details():
             "model_cache_ttl": settings.MODEL_CACHE_TTL_SECONDS,
         },
     }
+
+
+# ── Frontend SPA & Static Assets ─────────────────────────────────────────
+
+_root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+frontend_dist = os.path.join(_root_dir, "frontend", "dist")
+assets_dir = os.path.join(frontend_dist, "assets")
+
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
+@app.get("/", include_in_schema=False)
+async def serve_root():
+    """Serve the React application frontend at root URL."""
+    index_file = os.path.join(frontend_dist, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {
+        "status": "ok",
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+    }
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_spa_or_static(full_path: str):
+    """Fallback handler to serve static assets or index.html for client-side routing."""
+    # Never intercept backend API, docs, or health endpoints
+    if full_path.startswith(("api", "health", "docs", "redoc", "openapi.json")):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    target_file = os.path.join(frontend_dist, full_path)
+    if full_path and os.path.isfile(target_file):
+        return FileResponse(target_file)
+
+    index_file = os.path.join(frontend_dist, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+
+    raise HTTPException(status_code=404, detail="Not Found")
