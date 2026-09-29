@@ -95,19 +95,18 @@ export default function HeaderNav({ onOpenSearch, alertCount = 2, online = true 
 
   return (
     <header className="sticky top-0 z-50 w-full select-none shadow-md bg-[#12355B] border-b border-[#0d2744]">
-      {/* ── SUBTLE GOVERNMENT HOSPITAL BACKGROUND WATERMARK ── */}
+      {/* ── SUBTLE GOVERNMENT HEALTHCARE BUILDING BACKGROUND WATERMARK ── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Architectural hospital building facade image */}
+        {/* Subtle wide institutional building watermark spanning horizontally across the entire navbar */}
         <div
-          className="absolute inset-0 bg-cover bg-no-repeat opacity-15 mix-blend-luminosity filter contrast-125"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: `url('/hospital_header_bg.jpg')`,
-            backgroundPosition: 'right 20% center',
+            backgroundImage: `url('/hospital_watermark_banner.png')`,
+            backgroundPosition: 'center 45%',
+            backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover'
           }}
         />
-        {/* Navy gradient mask for text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#12355B] via-[#12355B]/80 to-[#12355B]/85" />
       </div>
 
       {/* ── HEADER CONTENT CONTAINER (74px height) ── */}
