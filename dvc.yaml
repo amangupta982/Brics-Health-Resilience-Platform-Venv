@@ -1,0 +1,57 @@
+stages:
+  download_data:
+    cmd: python data/raw/download_datasets.py
+    deps:
+      - data/raw/download_datasets.py
+    outs:
+      - data/raw/idsp_seasonal_reference.json:
+          cache: true
+
+  seed_database:
+    cmd: python backend/app/database/seed.py
+    deps:
+      - backend/app/database/seed.py
+      - backend/app/database/brics_health_dump.sql
+      - data/raw/idsp_seasonal_reference.json
+
+  train_stockout:
+    cmd: python backend/app/ml/classification/train_stockout.py
+    deps:
+      - backend/app/ml/classification/train_stockout.py
+      - backend/app/ml/preprocessing/features.py
+    outs:
+      - models/trained/xgb_stockout.json:
+          cache: true
+      - models/trained/lgb_stockout.txt:
+          cache: true
+
+  train_demand:
+    cmd: python backend/app/ml/forecasting/train_demand.py
+    deps:
+      - backend/app/ml/forecasting/train_demand.py
+      - backend/app/ml/preprocessing/features.py
+    outs:
+      - models/trained/xgb_demand_1d.json:
+          cache: true
+      - models/trained/xgb_demand_7d.json:
+          cache: true
+      - models/trained/xgb_demand_14d.json:
+          cache: true
+      - models/trained/xgb_demand_30d.json:
+          cache: true
+      - models/trained/lgb_demand_1d.txt:
+          cache: true
+      - models/trained/lgb_demand_7d.txt:
+          cache: true
+      - models/trained/lgb_demand_14d.txt:
+          cache: true
+      - models/trained/lgb_demand_30d.txt:
+          cache: true
+
+  train_lstm:
+    cmd: python backend/app/ml/lstm/train_demand_lstm.py
+    deps:
+      - backend/app/ml/lstm/train_demand_lstm.py
+    outs:
+      - models/trained/lstm_demand.keras:
+          cache: true

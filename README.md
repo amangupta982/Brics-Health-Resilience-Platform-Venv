@@ -13,6 +13,8 @@
 [![Flower](https://img.shields.io/badge/Federated_Learning-Flower_v1.5-FF7043?style=flat-square)](https://flower.ai/)
 [![OR-Tools](https://img.shields.io/badge/Google-OR_Tools-4285F4?style=flat-square&logo=google&logoColor=white)](https://developers.google.com/optimization)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![DVC](https://img.shields.io/badge/Data_Version_Control-DVC_v3.67-945DD6?style=flat-square&logo=dvc&logoColor=white)](https://dvc.org/)
+[![MLflow](https://img.shields.io/badge/MLOps-MLflow_v3.16-0194E2?style=flat-square&logo=mlflow&logoColor=white)](https://mlflow.org/)
 
 <br/>
 
@@ -22,7 +24,7 @@ PREDICT  ──▶  EXPLAIN  ──▶  SIMULATE  ──▶  OPTIMIZE  ──▶
 
 **An enterprise-grade, full-stack intelligence and command platform designed to eliminate pharmaceutical stock-outs, forecast clinical demand spikes, simulate epidemic shocks, orchestrate automated inter-facility logistics, and execute privacy-preserving federated machine learning across sovereign healthcare jurisdictions.**
 
-[Explore Modules](#-core-platform-modules) • [Live Quickstart](#-quickstart--installation) • [Benchmark Scores](#-benchmark-evaluation-scores--model-performance) • [System Architecture](#-system-architecture) • [API Reference](#-api-endpoints-reference) • [Methodology](#-machine-learning--optimization-methodology)
+[Explore Modules](#-core-platform-modules) • [Live Quickstart](#-quickstart--installation) • [Benchmark Scores](#-benchmark-evaluation-scores--model-performance) • [MLOps (DVC & MLflow)](#-mlops-data-version-control-dvc--mlflow-experiment-tracking) • [System Architecture](#-system-architecture) • [API Reference](#-api-endpoints-reference) • [Methodology](#-machine-learning--optimization-methodology)
 
 </div>
 
@@ -229,6 +231,74 @@ Demonstrates decentralized collaborative model training across simulated nationa
 
 ---
 
+## 📦 MLOps: Data Version Control (DVC) & MLflow Experiment Tracking
+
+The platform incorporates production-grade **MLOps governance** combining **DVC** for data and model artifact versioning with **MLflow** for decentralized experiment tracking, metric visualization, and model registry management.
+
+```
+┌──────────────────────────┐       ┌──────────────────────────┐       ┌──────────────────────────┐
+│     RAW DATA / SEED      │       │     DVC PIPELINE DAG     │       │     MLFLOW REGISTRY      │
+│  data/raw/ • SQL Dumps   │ ────▶ │   dvc.yaml • dvc repro   │ ────▶ │  Tracking URI • Registry │
+│  EpiClim & RHS Baselines │       │  Versioned Artifact Hash │       │  Champion Model Staging  │
+└──────────────────────────┘       └──────────────────────────┘       └──────────────────────────┘
+```
+
+### 1. Data Version Control (DVC)
+Data pipelines and serialized model weights are decoupled from git history using **DVC** to guarantee full lineage tracking, storage optimization, and reproducible builds:
+- **Tracked Assets**: Raw epidemiological calibration datasets (`data/raw/`) and serialized model artifacts (`models/trained/*.json`, `*.txt`, `*.keras`).
+- **Reproducible Pipeline (`dvc.yaml`)**: Declares stages with dependencies and cached outputs:
+  - `download_data`: Fetches public epidemiological surveillance reference baselines.
+  - `seed_database`: Generates and seeds PostgreSQL database tables.
+  - `train_stockout`: Trains XGBoost and LightGBM early-warning classification models.
+  - `train_demand`: Trains multi-horizon time-series regression models.
+  - `train_lstm`: Trains sequence temporal neural network.
+
+#### DVC Workflow Commands:
+```bash
+# Verify the MLOps pipeline dependency graph
+dvc dag
+
+# Reproduce the complete end-to-end data & training pipeline
+dvc repro
+
+# Push/pull versioned datasets to remote storage (S3 / GCS / Azure / MinIO)
+dvc remote add -d myremote s3://my-brics-health-bucket/dvcstore
+dvc push
+dvc pull
+```
+
+---
+
+### 2. MLflow Experiment Tracking & Model Registry
+Experiment logging, parameter auditing, and loss convergence curves are managed via **MLflow**, enabling distributed collaboration across research and operations teams:
+- **Centralized Experiment Runs**: Captures hyperparameter configurations (`learning_rate`, `max_depth`, `n_estimators`, `subsample`), epoch loss curves, and evaluation metrics ($F_2$, PR-AUC, MAE, RMSE) across all models.
+- **Model Registry & Governance**: Models winning champion status on the held-out temporal validation window are cataloged and transitioned to `Production` stage.
+- **Artifact Logging**: Stores SHAP feature importance plots, confusion matrices, and serialized model files.
+- **Collaborative Remote Tracking**: Configured via `MLFLOW_TRACKING_URI` to connect to team-hosted MLflow servers, Databricks, or cloud instances.
+
+```bash
+# Launch the MLflow Tracking Server UI (Port 5000)
+mlflow ui --port 5000
+
+# Set tracking URI to connect to a centralized remote team server
+export MLFLOW_TRACKING_URI="http://localhost:5000"  # or remote team server URI
+```
+
+```python
+# Sample snippet from training pipeline integration
+import mlflow
+import mlflow.xgboost
+
+mlflow.set_experiment("brics-stockout-early-warning")
+
+with mlflow.start_run(run_name="xgboost-champion"):
+    mlflow.log_params({"max_depth": 6, "learning_rate": 0.05, "eval_metric": "aucpr"})
+    mlflow.log_metrics({"roc_auc": 0.984, "pr_auc": 0.968, "f2_score": 0.972})
+    mlflow.xgboost.log_model(model, "models")
+```
+
+---
+
 ## 🔬 Machine Learning & Optimization Methodology
 
 ### 1. Clinical Recall-First Evaluation ($F_2$ Score)
@@ -309,6 +379,8 @@ The CI pipeline automatically validates:
 
 ```
 Medical-Repo-Project/
+├── .dvc/                         # DVC internal configuration & tracking cache
+├── dvc.yaml                      # DVC multi-stage pipeline definition
 ├── start.sh                      # Zero-configuration unified launcher
 ├── docker-compose.yml            # Multi-container orchestration
 ├── backend/
