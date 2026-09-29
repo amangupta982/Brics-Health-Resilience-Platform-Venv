@@ -8,12 +8,14 @@ import {
 import {
   Building2, MapPin, Users, Bed, ShieldCheck, AlertTriangle,
   ArrowUpRight, TrendingUp, Zap, RefreshCw, ChevronRight, Activity, Filter,
-  Sparkles, CheckCircle2, Clock, ArrowRight, ShieldAlert
+  Sparkles, CheckCircle2, Clock, ArrowRight, ShieldAlert, FileDown
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import api from '../services/api.js'
 import { useTheme } from '../components/ThemeContext.jsx'
 import KpiCard from '../components/KpiCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 const DEFAULT_DISTRICTS = [
   { rank: 1, district: 'Bengaluru Rural', score: 89.4, status: 'stable', weakest: 'bed_capacity' },
@@ -145,18 +147,33 @@ export default function Overview() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={async () => {
+                try {
+                  toast.loading('Generating overview report...', { id: 'ov-dl' })
+                  const fileName = await exportUniversalReport('/')
+                  toast.success(`Report downloaded: ${fileName}`, { id: 'ov-dl' })
+                } catch (err) {
+                  console.error(err)
+                  toast.error('Failed to generate report PDF', { id: 'ov-dl' })
+                }
+              }}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+            >
+              <FileDown size={14} /> Download Report (PDF)
+            </button>
             <Link
               to="/stockout"
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white transition-all shadow-sm flex items-center gap-1.5"
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${isDark ? 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'}`}
             >
-              <Zap size={14} /> Run Prediction
+              <Zap size={14} className="text-amber-400" /> Run Prediction
             </Link>
             <Link
               to="/redistribution"
               className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${isDark ? 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'}`}
             >
-              <RefreshCw size={13} /> Optimize LP
+              <RefreshCw size={13} className="text-sky-400" /> Optimize LP
             </Link>
           </div>
         </div>

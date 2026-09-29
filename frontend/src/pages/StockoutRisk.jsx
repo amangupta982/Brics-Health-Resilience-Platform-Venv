@@ -11,9 +11,10 @@ import StatusBadge from '../components/StatusBadge.jsx'
 import {
   AlertTriangle, Package, Clock, ShieldCheck,
   Search, Loader2, RefreshCw, Zap, ArrowRight, CheckCircle2,
-  AlertOctagon, Info
+  AlertOctagon, Info, FileDown
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 const MEDICINES = [
   'Paracetamol', 'ORS', 'Amoxicillin', 'Chloroquine/ACT',
@@ -206,15 +207,36 @@ export default function StockoutRisk() {
               </div>
             </div>
 
-            {(result.risk_level === 'CRITICAL' || result.risk_level === 'HIGH') && (
-              <Link
-                to="/redistribution"
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shrink-0 flex items-center gap-1.5 transition-all shadow-sm"
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={async () => {
+                  try {
+                    toast.loading('Generating prediction report...', { id: 'so-dl' })
+                    const fileName = await exportUniversalReport('/stockout')
+                    toast.success(`Report downloaded: ${fileName}`, { id: 'so-dl' })
+                  } catch (err) {
+                    console.error(err)
+                    toast.error('Failed to generate report PDF', { id: 'so-dl' })
+                  }
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  isDark ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-50 shadow-sm'
+                }`}
               >
-                <span>Generate Transfer Order</span>
-                <ArrowRight size={13} />
-              </Link>
-            )}
+                <FileDown size={14} className="text-sky-400" />
+                <span>Download Report (PDF)</span>
+              </button>
+
+              {(result.risk_level === 'CRITICAL' || result.risk_level === 'HIGH') && (
+                <Link
+                  to="/redistribution"
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shrink-0 flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <span>Generate Transfer Order</span>
+                  <ArrowRight size={13} />
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Primary Metrics Row with Risk Gauge */}

@@ -4,9 +4,11 @@ import {
   ChevronDown, Search, Bell, Sun, Moon,
   Menu, X, Home, Map, Clock, TrendingUp, ShieldCheck,
   BarChart3, Zap, RefreshCw, Globe, AlertTriangle, User,
-  CheckCircle2, Building2
+  CheckCircle2, Building2, FileDown
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useTheme } from './ThemeContext.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 export const NAV_SECTIONS = [
   {
@@ -230,6 +232,25 @@ export default function HeaderNav({ onOpenSearch, alertCount = 2, online = true 
               title="Search"
             >
               <Search size={18} />
+            </button>
+
+            {/* Universal Download Report Button */}
+            <button
+              onClick={async () => {
+                try {
+                  toast.loading('Exporting report PDF...', { id: 'report-dl' })
+                  const fileName = await exportUniversalReport(location.pathname)
+                  toast.success(`Downloaded: ${fileName}`, { id: 'report-dl' })
+                } catch (err) {
+                  console.error(err)
+                  toast.error('Failed to export PDF report', { id: 'report-dl' })
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 shadow-sm transition-all cursor-pointer"
+              title="Download official PDF report for current page"
+            >
+              <FileDown size={14} className="text-sky-300" />
+              <span className="hidden sm:inline">Download Report</span>
             </button>
 
             {/* Notifications Icon with Badge (Min 2 as in screenshot) */}

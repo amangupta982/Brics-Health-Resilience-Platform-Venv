@@ -4,11 +4,12 @@ import { motion } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
-import { Zap, AlertTriangle, TrendingUp, Activity, Loader2, ArrowRight, ShieldAlert, CheckCircle2 } from 'lucide-react'
+import { Zap, AlertTriangle, TrendingUp, Activity, Loader2, ArrowRight, ShieldAlert, CheckCircle2, FileDown, FileText, Download } from 'lucide-react'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
 import KpiCard from '../components/KpiCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
+import { generateEmergencyReportPDF } from '../utils/pdfExport.js'
 
 const SCENARIOS = [
   { value: 'dengue_outbreak', label: 'Dengue Outbreak', icon: '🦟', desc: '1.8x patient surge, 2.2x IV Fluid/Paracetamol demand spike' },
@@ -42,6 +43,25 @@ export default function EmergencySimulation() {
       toast.error(e?.response?.data?.detail || 'Simulation failed. Check backend logs.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDownloadPDF = async () => {
+    if (!result) return
+    const curScenario = SCENARIOS.find(s => s.value === scenario)
+    try {
+      toast.loading('Generating slide report from simulation...', { id: 'sim-dl' })
+      const fileName = await generateEmergencyReportPDF({
+        result,
+        scenarioName: curScenario?.label || 'Custom Outbreak Shock',
+        scenarioDesc: curScenario?.desc || 'Custom configured crisis parameters',
+        patientIncrease: Number(patientIncrease),
+        supplyDisruption: Number(supplyDisruption),
+      })
+      toast.success(`Report downloaded: ${fileName}`, { id: 'sim-dl' })
+    } catch (err) {
+      console.error('PDF export error:', err)
+      toast.error('Failed to generate PDF report.', { id: 'sim-dl' })
     }
   }
 
@@ -160,14 +180,32 @@ export default function EmergencySimulation() {
           </div>
         </div>
 
-        <button
-          onClick={runSimulation}
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/20"
-        >
-          {loading ? <Loader2 size={15} className="animate-spin" /> : <Zap size={15} />}
-          {loading ? 'Simulating Shock Dynamics...' : 'Execute Crisis Simulation'}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={runSimulation}
+            disabled={loading}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/20 cursor-pointer"
+          >
+            {loading ? <Loader2 size={15} className="animate-spin" /> : <Zap size={15} />}
+            {loading ? 'Simulating Shock Dynamics...' : 'Execute Crisis Simulation'}
+          </button>
+
+          {result && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={handleDownloadPDF}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                isDark
+                  ? 'bg-slate-800/90 hover:bg-slate-700/90 border-white/10 text-white hover:border-sky-400/50'
+                  : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-800 shadow-sm'
+              }`}
+            >
+              <FileDown size={15} className="text-sky-400" />
+              <span>Download Report (PDF)</span>
+            </motion.button>
+          )}
+        </div>
       </motion.div>
 
       {/* ── Simulation Results ── */}
@@ -177,6 +215,40 @@ export default function EmergencySimulation() {
           animate={{ opacity: 1 }}
           className="space-y-6"
         >
+          {/* Status Banner with PDF Action */}
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border ${
+            isDark
+              ? 'bg-sky-500/10 border-sky-500/25 text-white'
+              : 'bg-sky-50 border-sky-200 text-slate-900'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+                <FileText size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-sky-400 tracking-tight uppercase font-mono">
+                    Simulation Dossier Ready
+                  </h4>
+                  <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Calculated
+                  </span>
+                </div>
+                <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  Shock dynamics calculated across 60 Karnataka PHCs. Download the complete executive report as a PDF.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-all shadow-md shadow-sky-600/20 cursor-pointer self-start sm:self-auto"
+            >
+              <FileDown size={15} />
+              <span>Download Report as PDF</span>
+            </button>
+          </div>
+
           {/* Result KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <KpiCard
@@ -232,6 +304,58 @@ export default function EmergencySimulation() {
               </ResponsiveContainer>
             </div>
           </div>
+
+          {/* Top Impacted PHCs Table */}
+          {result.top_impacted && result.top_impacted.length > 0 && (
+            <div className={`rounded-2xl p-5 ${cardCls}`}>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Primary Impacted Facilities & Stockout Risks
+                  </h3>
+                  <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    PHCs experiencing the highest vulnerability elevation under simulated shock
+                  </p>
+                </div>
+                <span className="text-xs font-mono text-slate-400">
+                  Top {Math.min(result.top_impacted.length, 10)} centers
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className={`border-b ${isDark ? 'border-white/[0.08] text-slate-400' : 'border-slate-200 text-slate-500'}`}>
+                      <th className="pb-3 font-semibold">Facility Name</th>
+                      <th className="pb-3 font-semibold">District</th>
+                      <th className="pb-3 font-semibold">Medicine at Risk</th>
+                      <th className="pb-3 font-semibold text-right">Baseline Risk</th>
+                      <th className="pb-3 font-semibold text-right">Post-Shock Risk</th>
+                      <th className="pb-3 font-semibold text-right">Risk Delta</th>
+                    </tr>
+                  </thead>
+                  <tbody className={`divide-y ${isDark ? 'divide-white/[0.04]' : 'divide-slate-100'}`}>
+                    {result.top_impacted.slice(0, 8).map((phc, idx) => (
+                      <tr key={idx} className={isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50'}>
+                        <td className="py-2.5 font-medium text-slate-200">{phc.phc_name || phc.phc_id}</td>
+                        <td className="py-2.5 text-slate-400">{phc.district}</td>
+                        <td className="py-2.5 text-slate-300">{phc.medicine || 'Essential Meds'}</td>
+                        <td className="py-2.5 text-right font-mono-num text-slate-400">
+                          {((phc.risk_before || 0) * 100).toFixed(1)}%
+                        </td>
+                        <td className="py-2.5 text-right font-mono-num font-bold text-rose-400">
+                          {((phc.risk_after || 0) * 100).toFixed(1)}%
+                        </td>
+                        <td className="py-2.5 text-right font-mono-num font-bold text-rose-500">
+                          +{((phc.risk_delta || 0) * 100).toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 

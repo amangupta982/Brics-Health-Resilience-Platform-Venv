@@ -3,12 +3,13 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import {
   RefreshCw, Package, Truck, ArrowRight, ShieldCheck, Clock, Loader2,
-  CheckCircle2, AlertTriangle, MapPin, Check
+  CheckCircle2, AlertTriangle, MapPin, Check, FileDown, FileText
 } from 'lucide-react'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
 import KpiCard from '../components/KpiCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 export default function ResourceRedistribution() {
   const { theme } = useTheme()
@@ -79,14 +80,39 @@ export default function ResourceRedistribution() {
             </p>
           </div>
 
-          <button
-            onClick={runOptimization}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-sky-600/20 shrink-0"
-          >
-            {loading ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
-            {loading ? 'Solving Linear Program...' : 'Solve LP Optimization'}
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={runOptimization}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-sky-600/20 shrink-0 cursor-pointer"
+            >
+              {loading ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
+              {loading ? 'Solving Linear Program...' : 'Solve LP Optimization'}
+            </button>
+
+            {result && (
+              <button
+                onClick={async () => {
+                  try {
+                    toast.loading('Generating redistribution report...', { id: 'rd-dl' })
+                    const fileName = await exportUniversalReport('/redistribution')
+                    toast.success(`Dossier downloaded: ${fileName}`, { id: 'rd-dl' })
+                  } catch (err) {
+                    console.error(err)
+                    toast.error('Failed to generate report PDF', { id: 'rd-dl' })
+                  }
+                }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                  isDark
+                    ? 'bg-slate-800/90 hover:bg-slate-700/90 border-white/10 text-white hover:border-sky-400/50'
+                    : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-800 shadow-sm'
+                }`}
+              >
+                <FileDown size={15} className="text-sky-400" />
+                <span>Download Report (PDF)</span>
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
 
@@ -97,6 +123,48 @@ export default function ResourceRedistribution() {
           animate={{ opacity: 1 }}
           className="space-y-6"
         >
+          {/* Status Banner with PDF Action */}
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border ${
+            isDark
+              ? 'bg-sky-500/10 border-sky-500/25 text-white'
+              : 'bg-sky-50 border-sky-200 text-slate-900'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+                <FileText size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-sky-400 tracking-tight uppercase font-mono">
+                    Redistribution Dispatch Order Ready
+                  </h4>
+                  <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Solved
+                  </span>
+                </div>
+                <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {result.total_transfer_orders} optimal transfer routes computed. Download the official transport order dossier as a PDF.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={async () => {
+                try {
+                  toast.loading('Generating redistribution report...', { id: 'rd-dl' })
+                  const fileName = await exportUniversalReport('/redistribution')
+                  toast.success(`Dossier downloaded: ${fileName}`, { id: 'rd-dl' })
+                } catch (err) {
+                  console.error(err)
+                  toast.error('Failed to generate report PDF', { id: 'rd-dl' })
+                }
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-all shadow-md shadow-sky-600/20 cursor-pointer self-start sm:self-auto"
+            >
+              <FileDown size={15} />
+              <span>Download Report as PDF</span>
+            </button>
+          </div>
           {/* Result KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <KpiCard

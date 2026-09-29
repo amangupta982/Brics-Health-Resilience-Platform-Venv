@@ -5,11 +5,12 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, CartesianGrid, Legend, Cell
 } from 'recharts'
-import { TrendingUp, Clock, ShieldCheck, Loader2, Calendar, Pill, Building2, BarChart2 } from 'lucide-react'
+import { TrendingUp, Clock, ShieldCheck, Loader2, Calendar, Pill, Building2, BarChart2, FileDown } from 'lucide-react'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
 import KpiCard from '../components/KpiCard.jsx'
 import ModelComparisonCard from '../components/ModelComparisonCard.jsx'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 const HORIZONS = [
   { days: 1, label: '1-Day Tactical', sub: 'Immediate dispatch' },
@@ -195,6 +196,31 @@ export default function DemandForecast() {
           animate={{ opacity: 1 }}
           className="space-y-6"
         >
+          {/* Status & Report Action Ribbon */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+                Select Planning Horizon:
+              </span>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  toast.loading('Generating demand forecast report...', { id: 'df-dl' })
+                  const fileName = await exportUniversalReport('/demand')
+                  toast.success(`Report downloaded: ${fileName}`, { id: 'df-dl' })
+                } catch (err) {
+                  console.error(err)
+                  toast.error('Failed to generate report PDF', { id: 'df-dl' })
+                }
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-all cursor-pointer self-start sm:self-auto"
+            >
+              <FileDown size={14} />
+              <span>Download Forecast Report (PDF)</span>
+            </button>
+          </div>
+
           {/* Horizon Selection Tabs */}
           <div className="flex items-center gap-3 overflow-x-auto pb-1">
             {HORIZONS.map(h => {

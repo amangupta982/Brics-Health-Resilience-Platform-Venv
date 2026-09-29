@@ -3,9 +3,11 @@ import { motion } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell
 } from 'recharts'
-import { Trophy, ShieldCheck, BarChart3, Loader2, Calendar, CheckCircle2, Info } from 'lucide-react'
+import { Trophy, ShieldCheck, BarChart3, Loader2, Calendar, CheckCircle2, Info, FileDown } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useTheme } from '../components/ThemeContext.jsx'
 import api from '../services/api.js'
+import { exportUniversalReport } from '../utils/pdfExport.js'
 
 const TASK_LABELS = {
   stockout_classification: 'Stockout Classification (7-Day Early Warning)',
@@ -99,29 +101,48 @@ export default function ModelComparison() {
   return (
     <div className="space-y-6">
 
-      {/* ── Task Tabs ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {tasks.map(t => {
-          const active = activeTask === t
-          return (
-            <button
-              key={t}
-              onClick={() => setActiveTask(t)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border
-                ${active
-                  ? isDark
-                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
-                    : 'bg-sky-50 text-sky-950 border-sky-300 shadow-sm'
-                  : isDark
-                    ? 'bg-[#0e1626] border-white/[0.06] text-slate-400 hover:text-white'
-                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                }
-              `}
-            >
-              {TASK_LABELS[t] || t}
-            </button>
-          )
-        })}
+      {/* ── Task Tabs & Report Action ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {tasks.map(t => {
+            const active = activeTask === t
+            return (
+              <button
+                key={t}
+                onClick={() => setActiveTask(t)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border
+                  ${active
+                    ? isDark
+                      ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
+                      : 'bg-sky-50 text-sky-950 border-sky-300 shadow-sm'
+                    : isDark
+                      ? 'bg-[#0e1626] border-white/[0.06] text-slate-400 hover:text-white'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                  }
+                `}
+              >
+                {TASK_LABELS[t] || t}
+              </button>
+            )
+          })}
+        </div>
+
+        <button
+          onClick={async () => {
+            try {
+              toast.loading('Exporting model performance audit...', { id: 'mc-dl' })
+              const fileName = await exportUniversalReport('/models')
+              toast.success(`Audit downloaded: ${fileName}`, { id: 'mc-dl' })
+            } catch (err) {
+              console.error(err)
+              toast.error('Failed to generate audit PDF', { id: 'mc-dl' })
+            }
+          }}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition-all cursor-pointer self-start sm:self-auto shrink-0"
+        >
+          <FileDown size={14} />
+          <span>Download Audit Report (PDF)</span>
+        </button>
       </div>
 
       {/* ── Champion Summary Banner ── */}
