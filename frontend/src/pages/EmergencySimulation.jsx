@@ -46,21 +46,22 @@ export default function EmergencySimulation() {
     }
   }
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!result) return
     const curScenario = SCENARIOS.find(s => s.value === scenario)
     try {
-      const fileName = generateEmergencyReportPDF({
+      toast.loading('Generating slide report from simulation...', { id: 'sim-dl' })
+      const fileName = await generateEmergencyReportPDF({
         result,
         scenarioName: curScenario?.label || 'Custom Outbreak Shock',
         scenarioDesc: curScenario?.desc || 'Custom configured crisis parameters',
         patientIncrease: Number(patientIncrease),
         supplyDisruption: Number(supplyDisruption),
       })
-      toast.success(`Report downloaded: ${fileName}`)
+      toast.success(`Report downloaded: ${fileName}`, { id: 'sim-dl' })
     } catch (err) {
       console.error('PDF export error:', err)
-      toast.error('Failed to generate PDF report.')
+      toast.error('Failed to generate PDF report.', { id: 'sim-dl' })
     }
   }
 
