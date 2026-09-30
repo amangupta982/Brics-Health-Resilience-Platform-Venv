@@ -3,6 +3,10 @@
 # 🏥 BRICS Health Resilience Platform
 ### Sovereign Healthcare Visibility, Predictive Logistics & Crisis Response Grid
 
+<br/>
+<img src="docs/hero.png" alt="BRICS Health Platform Dashboard" width="900" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"/>
+<br/><br/>
+
 [![CI Pipeline](https://github.com/amangupta982/Medical-Repo-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/amangupta982/Medical-Repo-Project/actions)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -44,10 +48,7 @@ PREDICT  ──▶  EXPLAIN  ──▶  SIMULATE  ──▶  OPTIMIZE  ──▶
 - [x] **Theme Alignment:** This project directly tackles the **Resilience** and **Cooperation** tracks by providing a predictive command center that ensures public healthcare networks remain resilient during crisis shocks, while utilizing Federated Learning to enable cross-border cooperation without compromising sovereign data privacy.
 - [x] **Code Repository:** The complete application logic, environment configs, and setup instructions are available in this public GitHub repository: [amangupta982/Medical-Repo-Project](https://github.com/amangupta982/Medical-Repo-Project).
 - [x] **Architecture Overview:** The platform leverages **Google Cloud Platform (GCP)** for scalable infrastructure (deploying the FastAPI backend via **Cloud Run** and hosting the database on **Cloud SQL for PostgreSQL**), and uses **Firebase Authentication** for secure identity management. Additionally, it integrates the **Google Gemini API** to process raw unstructured epidemiological field reports, analyzing them with advanced LLMs to automatically generate plain-language crisis response summaries and strategic recommendations for facility managers directly on the dashboard.
-
-<div align="center">
-  <img src="docs/gemini_integration.png" alt="Gemini AI Epidemiological Triage" width="800"/>
-</div>
+- [x] **Google AI Studio Integration:** You can test our AI agent live! Open [Google AI Studio](https://aistudio.google.com/) (Gemini 1.5 Flash), and paste our custom System Instructions to instantly convert raw, unstructured epidemiological field reports into structured JSON crisis summaries and triage actions.
 
 ---
 
