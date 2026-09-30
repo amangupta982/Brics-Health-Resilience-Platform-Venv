@@ -14,11 +14,14 @@ import DistrictResilience from './pages/DistrictResilience.jsx'
 import ModelComparison from './pages/ModelComparison.jsx'
 import FederatedLearning from './pages/FederatedLearning.jsx'
 import Alerts from './pages/Alerts.jsx'
+import Login from './pages/Login.jsx'
 
 import HeaderNav from './components/HeaderNav.jsx'
 import CommandPalette from './components/CommandPalette.jsx'
+import { useAuth } from './components/AuthContext.jsx'
 
 export default function App() {
+  const { currentUser } = useAuth()
   const { theme } = useTheme()
   const location = useLocation()
   const isDark = theme === 'dark'
@@ -72,8 +75,14 @@ export default function App() {
   return (
     <div className={`flex flex-col min-h-screen ${isDark ? 'bg-[#090e18] text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
 
-      {/* ── Global Command Palette Modal ── */}
-      <CommandPalette isOpen={cmdOpen} onClose={() => setCmdOpen(false)} />
+      {!currentUser ? (
+        <Routes>
+          <Route path="*" element={<Login />} />
+        </Routes>
+      ) : (
+        <>
+          {/* ── Global Command Palette Modal ── */}
+          <CommandPalette isOpen={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       {/* ── Top Horizontal Government Navigation Bar ── */}
       <HeaderNav
@@ -107,7 +116,8 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
-
+        </>
+      )}
     </div>
   )
 }
