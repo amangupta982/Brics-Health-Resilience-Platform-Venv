@@ -344,6 +344,15 @@ export default function HeaderNav({ onOpenSearch, alertCount = 2, online = true 
               )}
             </div>
 
+            {/* Dedicated Visible Sign Out Button */}
+            <button
+              onClick={handleSignOut}
+              className="hidden sm:flex items-center gap-1.5 p-2 text-[#ff6b6b] hover:text-[#ff8787] hover:bg-white/10 rounded-lg transition-colors ml-1"
+              title="Secure Sign Out"
+            >
+              <LogOut size={18} />
+            </button>
+
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(prev => !prev)}
