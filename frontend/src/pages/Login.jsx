@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldAlert, LogIn, Loader2 } from 'lucide-react';
+import { ShieldAlert, LogIn, Loader2, UserPlus } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
-import { auth, signInWithEmailAndPassword } from '../firebase';
+import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../firebase';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function Login() {
@@ -14,21 +14,24 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    // For Hackathon demo purposes, if Firebase fails because it's using a dummy config,
-    // we can fallback to a simulated success or you can use a real Firebase project.
     try {
       if (email === 'admin@brics.org' && password === 'admin123') {
-        // Simulated bypass for hackathon if dummy config is used
         toast.success("Authentication Successful (Demo Mode)");
         setTimeout(() => navigate('/'), 1000);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        toast.success("Authentication Successful");
+        if (isSignUp) {
+          await createUserWithEmailAndPassword(auth, email, password);
+          toast.success("Account Created Successfully");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+          toast.success("Authentication Successful");
+        }
         navigate('/');
       }
     } catch (error) {
@@ -59,7 +62,7 @@ export default function Login() {
           Secure Sovereign Access Portal
         </p>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-4">
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
               Government Email (or demo: admin@brics.org)
@@ -105,10 +108,22 @@ export default function Login() {
                 : 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400'
             }`}
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <LogIn size={20} />}
-            Authenticate Node
+            {loading ? <Loader2 className="animate-spin" size={20} /> : (isSignUp ? <UserPlus size={20} /> : <LogIn size={20} />)}
+            {isSignUp ? 'Create New Account' : 'Authenticate Node'}
           </button>
         </form>
+        
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className={`text-sm font-medium transition-colors ${
+              isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+            }`}
+          >
+            {isSignUp ? 'Already have an account? Sign In' : 'Need a new account? Sign Up'}
+          </button>
+        </div>
       </motion.div>
     </div>
   );
