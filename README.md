@@ -15,6 +15,8 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![DVC](https://img.shields.io/badge/Data_Version_Control-DVC_v3.67-945DD6?style=flat-square&logo=dvc&logoColor=white)](https://dvc.org/)
 [![MLflow](https://img.shields.io/badge/MLOps-MLflow_v3.16-0194E2?style=flat-square&logo=mlflow&logoColor=white)](https://mlflow.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-FFA611?style=flat-square&logo=firebase&logoColor=white)](https://firebase.google.com/)
+[![Google Cloud Run](https://img.shields.io/badge/Cloud_Run-4285F4?style=flat-square&logo=google-cloud&logoColor=white)](https://cloud.google.com/run)
 
 <br/>
 
@@ -27,6 +29,14 @@ PREDICT  ──▶  EXPLAIN  ──▶  SIMULATE  ──▶  OPTIMIZE  ──▶
 [Explore Modules](#-core-platform-modules) • [Live Quickstart](#-quickstart--installation) • [Benchmark Scores](#-benchmark-evaluation-scores--model-performance) • [MLOps (DVC & MLflow)](#-mlops-data-version-control-dvc--mlflow-experiment-tracking) • [System Architecture](#-system-architecture) • [API Reference](#-api-endpoints-reference) • [Methodology](#-machine-learning--optimization-methodology)
 
 </div>
+
+---
+
+## 📝 Mandatory Submission Checklist
+
+- [x] **Theme Alignment:** This project directly tackles the **Resilience** and **Cooperation** tracks by providing a predictive command center that ensures public healthcare networks remain resilient during crisis shocks, while utilizing Federated Learning to enable cross-border cooperation without compromising sovereign data privacy.
+- [x] **Code Repository:** The complete application logic, environment configs, and setup instructions are available in this public GitHub repository: [amangupta982/Medical-Repo-Project](https://github.com/amangupta982/Medical-Repo-Project).
+- [x] **Architecture Overview:** The platform leverages **Google Cloud Platform (GCP)** for scalable infrastructure (deploying the FastAPI backend via **Cloud Run** and hosting the database on **Cloud SQL for PostgreSQL**), and uses **Firebase Authentication** for secure identity management. Additionally, it integrates the **Google Gemini API** to process raw unstructured epidemiological field reports, analyzing them with advanced LLMs to automatically generate plain-language crisis response summaries and strategic recommendations for facility managers directly on the dashboard.
 
 ---
 
@@ -160,6 +170,34 @@ npm install
 
 # Run Vite dev server
 npm run dev
+```
+
+---
+
+### Option 4: Deploy to Google Cloud Run
+
+The platform provides out-of-the-box support for deploying the containerized backend via **Google Cloud Run** for a serverless, scalable architecture.
+
+```bash
+# 1. Authenticate with Google Cloud
+gcloud auth login
+gcloud config set project [YOUR_PROJECT_ID]
+
+# 2. Enable Required APIs
+gcloud services enable run.googleapis.com
+gcloud services enable containerregistry.googleapis.com
+
+# 3. Build & Submit the container using Cloud Build
+cd backend
+gcloud builds submit --tag gcr.io/[YOUR_PROJECT_ID]/brics-health-backend .
+
+# 4. Deploy to Cloud Run
+gcloud run deploy brics-health-backend \
+  --image gcr.io/[YOUR_PROJECT_ID]/brics-health-backend \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars="DATABASE_URL=postgresql://user:pass@/your-cloud-sql-connection,FIREBASE_CONFIG_PATH=/secret/path"
 ```
 
 ---
