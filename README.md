@@ -20,6 +20,13 @@
 
 <br/>
 
+<div align="center">
+  <h2>🌐 <a href="https://project-e2815.web.app">Click Here for the Live Interactive Demo</a> 🌐</h2>
+  <p><strong>Note for Judges:</strong> The frontend is running in a <em>Standalone Demo Mode</em> on Firebase Hosting. It simulates the Python backend locally using cached JSON telemetry data, demonstrating full functionality without requiring Google Cloud Billing.</p>
+</div>
+
+<br/>
+
 ```
 PREDICT  ──▶  EXPLAIN  ──▶  SIMULATE  ──▶  OPTIMIZE  ──▶  ACT  ──▶  AUDIT
 ```
@@ -37,6 +44,10 @@ PREDICT  ──▶  EXPLAIN  ──▶  SIMULATE  ──▶  OPTIMIZE  ──▶
 - [x] **Theme Alignment:** This project directly tackles the **Resilience** and **Cooperation** tracks by providing a predictive command center that ensures public healthcare networks remain resilient during crisis shocks, while utilizing Federated Learning to enable cross-border cooperation without compromising sovereign data privacy.
 - [x] **Code Repository:** The complete application logic, environment configs, and setup instructions are available in this public GitHub repository: [amangupta982/Medical-Repo-Project](https://github.com/amangupta982/Medical-Repo-Project).
 - [x] **Architecture Overview:** The platform leverages **Google Cloud Platform (GCP)** for scalable infrastructure (deploying the FastAPI backend via **Cloud Run** and hosting the database on **Cloud SQL for PostgreSQL**), and uses **Firebase Authentication** for secure identity management. Additionally, it integrates the **Google Gemini API** to process raw unstructured epidemiological field reports, analyzing them with advanced LLMs to automatically generate plain-language crisis response summaries and strategic recommendations for facility managers directly on the dashboard.
+
+<div align="center">
+  <img src="docs/gemini_integration.png" alt="Gemini AI Epidemiological Triage" width="800"/>
+</div>
 
 ---
 
@@ -73,28 +84,7 @@ The **BRICS Health Resilience Platform** bridges this systemic gap through an en
 
 ## 🏗️ System Architecture
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                CLIENT PRESENTATION LAYER                               │
-│  React 18  •  Vite 5  •  Tailwind CSS v4  •  Framer Motion  •  Recharts  •  Leaflet GIS │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ HTTP / JSON API (Port 8000 / 5173)
-┌───────────────────────────────────────────▼────────────────────────────────────────────┐
-│                             FASTAPI BACKEND SERVICE ENGINE                             │
-│       Request Timing  •  Correlation IDs  •  CORS  •  FastAPI Pydantic Schemas         │
-├───────────────────────┬────────────────────────┬───────────────────────────────────────┤
-│    PREDICTIVE ML      │   OPERATIONS RESEARCH  │          FEDERATED LEARNING           │
-│  • XGBoost Classifier │  • Google OR-Tools     │  • Flower (flwr) NumPyClient          │
-│  • LightGBM Regressor │    MIP Transportation  │  • Non-IID Sovereign Client Grid      │
-│  • LSTM Sequence Net  │  • Shortest-Path Haul  │  • Homomorphic Weight Aggregation     │
-│  • SHAP Explainability│  • FEFO Prioritization │  • Differential Privacy Guarantee     │
-└───────────────────────┴───────────┬────────────┴───────────────────────────────────────┘
-                                    │ SQLAlchemy ORM / Async Engine
-┌───────────────────────────────────▼────────────────────────────────────────────────────┐
-│                               PERSISTENCE & STORAGE                                    │
-│  PostgreSQL 16 Database  •  SQLite Fallback  •  350k+ Calibrated Operational Records  │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+![System Architecture](docs/architecture.png)
 
 ---
 
