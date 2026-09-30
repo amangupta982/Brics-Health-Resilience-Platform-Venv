@@ -1,50 +1,33 @@
-import axios from 'axios'
+import mockPhcs from './mock_phcs.json'
+import mockDistricts from './mock_districts.json'
+import mockStats from './mock_stats.json'
+import mockResilience from './mock_resilience.json'
+import mockModels from './mock_models.json'
+import mockAlerts from './mock_alerts.json'
+import mockInventory from './mock_inventory.json'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
-
-const client = axios.create({ baseURL: API_BASE, timeout: 120000 })
-
-// In-memory cache for static and semi-static data
-const cache = new Map()
-
-function cachedGet(url, params = null, ttlMs = 60000) {
-  const key = `${url}:${JSON.stringify(params)}`
-  const now = Date.now()
-  if (cache.has(key)) {
-    const item = cache.get(key)
-    if (now - item.timestamp < ttlMs) {
-      return Promise.resolve(item.data)
-    }
-  }
-  return client.get(url, { params }).then(r => {
-    cache.set(key, { data: r.data, timestamp: now })
-    return r.data
-  })
-}
+// Demo Mode: Mock delay to simulate network latency
+const delay = (ms = 300) => new Promise(res => setTimeout(res, ms));
 
 export const api = {
-  // Cached endpoints for instant page switches
-  getPHCs: () => cachedGet('/api/phcs', null, 300000).then(r => r.data ?? r), // 5 min cache
-  getDistricts: () => cachedGet('/api/districts', null, 300000).then(r => r.data ?? r),
-  getStatsOverview: () => cachedGet('/api/stats/overview', null, 30000), // 30s cache
-  getResilienceScores: () => cachedGet('/api/resilience-score', null, 60000),
-  getModelPerformance: (task) => cachedGet('/api/models/performance', task ? { task } : {}, 120000),
+  getPHCs: () => delay().then(() => mockPhcs.data ?? mockPhcs),
+  getDistricts: () => delay().then(() => mockDistricts.data ?? mockDistricts),
+  getStatsOverview: () => delay().then(() => mockStats),
+  getResilienceScores: () => delay().then(() => mockResilience),
+  getModelPerformance: (task) => delay().then(() => mockModels),
 
-  // Live endpoints
-  getInventory: (params) => client.get('/api/inventory', { params }).then(r => r.data.data ?? r.data),
-  getAlerts: (params) => cachedGet('/api/alerts', params, 10000).then(r => r.data ?? r), // 10s cache
-  checkHealth: () => client.get('/health', { timeout: 3000 }).then(r => r.data),
+  getInventory: (params) => delay().then(() => mockInventory.data ?? mockInventory),
+  getAlerts: (params) => delay().then(() => mockAlerts.data ?? mockAlerts),
+  checkHealth: () => delay().then(() => ({ status: 'ok', demo_mode: true })),
 
-  // Mutation / AI Execution Endpoints
-  predictDemand: (payload) => client.post('/api/predict/demand', payload).then(r => r.data),
-  predictStockout: (payload) => client.post('/api/predict/stockout', payload).then(r => r.data),
-  simulateEmergency: (payload) => client.post('/api/emergency/simulate', payload).then(r => r.data),
-  optimizeRedistribution: () => client.post('/api/optimize/redistribution').then(r => r.data),
-  getExplanation: (predictionId) => client.get(`/api/explainability/${predictionId}`).then(r => r.data),
-  trainFederated: (rounds = 5) => client.post('/api/federated/train', { rounds }).then(r => r.data),
+  predictDemand: (payload) => delay(800).then(() => ({ status: 'success', message: 'Demand predicted successfully (Demo Mode)' })),
+  predictStockout: (payload) => delay(800).then(() => ({ status: 'success', message: 'Stockout predicted successfully (Demo Mode)' })),
+  simulateEmergency: (payload) => delay(1200).then(() => ({ status: 'success', message: 'Emergency simulation completed (Demo Mode)' })),
+  optimizeRedistribution: () => delay(1000).then(() => ({ status: 'success', message: 'Redistribution optimized (Demo Mode)' })),
+  getExplanation: (predictionId) => delay().then(() => ({ explanation: 'This is a demo explanation from the mock server.' })),
+  trainFederated: (rounds = 5) => delay(2000).then(() => ({ status: 'success', message: `Federated learning completed ${rounds} rounds (Demo Mode)` })),
 
-  // Clear cache helper
-  invalidateCache: () => cache.clear(),
+  invalidateCache: () => {},
 }
 
 export default api
