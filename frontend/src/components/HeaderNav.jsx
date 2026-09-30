@@ -4,8 +4,9 @@ import {
   ChevronDown, Search, Bell, Sun, Moon,
   Menu, X, Home, Map, Clock, TrendingUp, ShieldCheck,
   BarChart3, Zap, RefreshCw, Globe, AlertTriangle, User,
-  CheckCircle2, Building2, FileDown
+  CheckCircle2, Building2, FileDown, LogOut
 } from 'lucide-react'
+import { auth, signOut } from '../firebase'
 import toast from 'react-hot-toast'
 import { useTheme } from './ThemeContext.jsx'
 import { exportUniversalReport } from '../utils/pdfExport.js'
@@ -93,6 +94,16 @@ export default function HeaderNav({ onOpenSearch, alertCount = 2, online = true 
 
   const toggleDropdown = (id) => {
     setActiveDropdown(prev => (prev === id ? null : id))
+  }
+
+  const handleSignOut = async () => {
+    try {
+      setProfileOpen(false)
+      await signOut(auth)
+      toast.success('Signed out securely')
+    } catch (err) {
+      toast.error('Failed to sign out')
+    }
   }
 
   return (
@@ -321,6 +332,13 @@ export default function HeaderNav({ onOpenSearch, alertCount = 2, online = true 
                       <Bell size={13} className="text-[#155E91]" />
                       <span>Active Incidents & Alerts</span>
                     </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-red-600 transition-colors font-medium text-left"
+                    >
+                      <LogOut size={13} />
+                      <span>Secure Sign Out</span>
+                    </button>
                   </div>
                 </div>
               )}
